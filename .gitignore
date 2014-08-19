@@ -1,0 +1,4 @@
+target/
+.DS_Store
+*.tar.bz2
+*.out.*

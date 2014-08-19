@@ -1,0 +1,62 @@
+h1. About
+
+Transform MAB-XML to JSON for Elasticsearch indexing with "Metafacture":https://github.com/culturegraph/metafacture-core/wiki.
+
+h1. Setup
+
+h2. Build
+
+"!https://secure.travis-ci.org/hbz/mabxml-elasticsearch.png?branch=master!":https://travis-ci.org/hbz/mabxml-elasticsearch
+
+Prerequisites: Java 8, Maven 3; verify with @mvn -version@
+
+Create and change into a folder where you want to store the projects:
+
+* @mkdir ~/git ; cd ~/git@
+
+Build the hbz metafacture-core fork:
+
+* @git clone https://github.com/hbz/metafacture-core.git@
+* @cd metafacture-core@
+* @mvn clean install -DskipTests@
+* @cd ..@
+
+Build mabxml-elasticsearch:
+
+* @git clone https://github.com/hbz/mabxml-elasticsearch.git@
+* @cd mabxml-elasticsearch@
+* @mvn clean install@
+
+See the @.travis.yml@ file for details on the CI config used by Travis.
+
+h2. Downloads
+
+Download the sample input data:
+
+* @cd src/main/resources/input/@
+* @wget http://test.lobid.org/assets/data/20140817_20140818.tar.bz2@
+
+Go to the project root, run the transformation and change into the output directory:
+
+* @cd ../../../../@
+* @mvn exec:java -Dexec.mainClass="flow.Transform"; cd src/main/resources/output/@
+
+h2. Index
+
+Import the data into Elasticsearch (only works hbz internally!):
+
+* @curl -s -XPOST http://quaoar2.hbz-nrw.de:9200/_bulk --data-binary @es-bulk.out.json; echo@
+
+Get a specific record by hbz ID:
+
+* @curl -XGET 'http://quaoar2.hbz-nrw.de:9200/hbz01/mabxml/HT012786619'; echo@
+
+Exclude the metadata:
+
+* @curl -XGET 'http://quaoar2.hbz-nrw.de:9200/hbz01/mabxml/HT012786619/_source'; echo@
+
+For details on the various options see the "GET API documentation":http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-get.html.
+
+h1. License
+
+Eclipse Public License: "http://www.eclipse.org/legal/epl-v10.html":http://www.eclipse.org/legal/epl-v10.html
