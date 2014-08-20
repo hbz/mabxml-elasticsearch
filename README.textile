@@ -2,9 +2,7 @@ h1. About
 
 Transform MAB-XML to JSON for Elasticsearch indexing with "Metafacture":https://github.com/culturegraph/metafacture-core/wiki.
 
-h1. Setup
-
-h2. Build
+h1. Build
 
 "!https://secure.travis-ci.org/hbz/mabxml-elasticsearch.png?branch=master!":https://travis-ci.org/hbz/mabxml-elasticsearch
 
@@ -29,29 +27,24 @@ Build mabxml-elasticsearch:
 
 See the @.travis.yml@ file for details on the CI config used by Travis.
 
-h2. Downloads
+h1. Data
 
 Download the sample input data:
 
 * @cd src/main/resources/input/@
 * @wget http://test.lobid.org/assets/data/20140817_20140818.tar.bz2@
 
-Go to the project root, run the transformation and change into the output directory:
+Go to the project root and run the transformation:
 
-* @cd ../../../../@
-* @mvn exec:java -Dexec.mainClass="flow.Transform"; cd src/main/resources/output/@
+* @cd ../../../../ ; mvn exec:java -Dexec.mainClass="flow.Transform"@
 
-h2. Index
+This will index the data in an hbz-internal Elasticsearch instance (only works hbz internally).
 
-Import the data into Elasticsearch (only works hbz internally!):
-
-* @curl -s -XPOST http://quaoar2.hbz-nrw.de:9200/_bulk --data-binary @es-bulk.out.json; echo@
-
-Get a specific record by hbz ID:
+You can then GET a specific record by hbz ID:
 
 * @curl -XGET 'http://quaoar2.hbz-nrw.de:9200/hbz01/mabxml/HT012786619'; echo@
 
-Exclude the metadata:
+You can also exclude the Elasticsearch metadata:
 
 * @curl -XGET 'http://quaoar2.hbz-nrw.de:9200/hbz01/mabxml/HT012786619/_source'; echo@
 
