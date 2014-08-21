@@ -27,9 +27,11 @@ import pipe.IdExtractor;
 public class Transform {
 
 	private static final String IN = "src/main/resources/input/";
+	private static final String PATTERN = ".*\\.tar.bz2";
 	private static final String X_PATH =
 			"/OAI-PMH/ListRecords/record/metadata/record/datafield[@tag='001']/subfield[@code='a']";
 
+	private static final String INDEX = "hbz01-test";
 	private static final Settings CLIENT_SETTINGS = ImmutableSettings
 			.settingsBuilder().put("cluster.name", "lobid-wan")
 			.put("client.transport.sniff", false)
@@ -43,7 +45,7 @@ public class Transform {
 	public static void main(String... args) {
 		DirReader readDir = new DirReader();
 		readDir.setRecursive(false);
-		readDir.setFilenamePattern(".*\\.tar.bz2");
+		readDir.setFilenamePattern(PATTERN);
 		FileOpener openFile = new FileOpener();
 		openFile.setCompression(FileCompression.BZIP2);
 		//@formatter:off
@@ -55,7 +57,7 @@ public class Transform {
 					.setReceiver(new TarReader())
 					.setReceiver(new IdExtractor(X_PATH))
 					.setReceiver(new JsonEncoder())
-					.setReceiver(new ElasticsearchIndexer("hbzId", client.prepareIndex("hbz01-test", "mabxml")));
+					.setReceiver(new ElasticsearchIndexer("hbzId", client.prepareIndex(INDEX, "mabxml")));
 			//@formatter:on
 			process(readDir);
 		}
