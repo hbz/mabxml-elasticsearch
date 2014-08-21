@@ -5,6 +5,7 @@ package flow;
 import java.util.concurrent.TimeUnit;
 
 import org.culturegraph.mf.stream.converter.JsonEncoder;
+import org.culturegraph.mf.stream.pipe.ObjectLogger;
 import org.culturegraph.mf.stream.reader.TarReader;
 import org.culturegraph.mf.stream.source.DirReader;
 import org.culturegraph.mf.stream.source.FileOpener;
@@ -49,6 +50,7 @@ public class Transform {
 		try (TransportClient tc = new TransportClient(CLIENT_SETTINGS);
 				Client client = tc.addTransportAddress(NODE_1).addTransportAddress(NODE_2)) {
 			readDir
+					.setReceiver(new ObjectLogger<String>("Directory reader: "))
 					.setReceiver(openFile)
 					.setReceiver(new TarReader())
 					.setReceiver(new IdExtractor(X_PATH))
