@@ -53,7 +53,7 @@ public class Transform {
 					.setReceiver(new TarReader())
 					.setReceiver(new IdExtractor(X_PATH))
 					.setReceiver(new JsonEncoder())
-					.setReceiver(new ElasticsearchIndexer("hbzId", client.prepareIndex("hbz01", "mabxml")));
+					.setReceiver(new ElasticsearchIndexer("hbzId", client.prepareIndex("hbz01-test", "mabxml")));
 			//@formatter:on
 			process(readDir);
 		}

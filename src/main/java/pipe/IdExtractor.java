@@ -28,6 +28,7 @@ import org.xml.sax.SAXException;
 public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 
 	private XPathExpression expression;
+	private DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
 	/**
 	 * @param xPath The xPath expression to select the record ID
@@ -42,21 +43,30 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 
 	@Override
 	public void process(Reader reader) {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		try (Scanner scanner = new Scanner(reader)) {
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
-				DocumentBuilder builder = factory.newDocumentBuilder();
-				Document doc = builder.parse(new InputSource(new StringReader(line)));
-				String hbzId = expression.evaluate(doc);
+				String hbzId = parseXml(line);
 				getReceiver().startRecord(hbzId);
 				getReceiver().literal("hbzId", hbzId);
 				getReceiver().literal("mabXml", line);
 				getReceiver().endRecord();
 			}
-		} catch (IOException | XPathExpressionException
-				| ParserConfigurationException | SAXException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private String parseXml(String line) throws IOException {
+		try {
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(new InputSource(new StringReader(line)));
+			return expression.evaluate(doc);
+		} catch (XPathExpressionException | ParserConfigurationException
+				| SAXException e) {
+			System.err.println("Could no parse: " + line);
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
