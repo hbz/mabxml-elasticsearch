@@ -12,6 +12,7 @@ import org.culturegraph.mf.stream.source.FileOpener;
 import org.culturegraph.mf.util.FileCompression;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.collect.ImmutableMap;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -51,6 +52,7 @@ public class Transform {
 		//@formatter:off
 		try (TransportClient tc = new TransportClient(CLIENT_SETTINGS);
 				Client client = tc.addTransportAddress(NODE_1).addTransportAddress(NODE_2)) {
+			setIndexRefreshInterval(client, "-1");
 			readDir
 					.setReceiver(new ObjectLogger<String>("Directory reader: "))
 					.setReceiver(openFile)
@@ -60,11 +62,18 @@ public class Transform {
 					.setReceiver(new ElasticsearchIndexer("hbzId", client.prepareIndex(INDEX, "mabxml")));
 			//@formatter:on
 			process(readDir);
+			setIndexRefreshInterval(client, "1");
 		}
 	}
 
 	static void process(DirReader dirReader) {
 		dirReader.process(IN);
 		dirReader.closeStream();
+	}
+
+	private static void setIndexRefreshInterval(Client client, String setting) {
+		client.admin().indices().prepareUpdateSettings(INDEX)
+				.setSettings(ImmutableMap.of("index.refresh_interval", setting))
+				.execute().actionGet();
 	}
 }
