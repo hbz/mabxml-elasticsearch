@@ -14,7 +14,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.collect.ImmutableMap;
 import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 import pipe.ElasticsearchIndexer;
@@ -29,18 +29,17 @@ public class Transform {
 
 	private static final String IN = "src/main/resources/input/";
 	private static final String PATTERN = ".*\\.tar.bz2";
-	private static final String X_PATH =
-			"/OAI-PMH/ListRecords/record/metadata/record/datafield[@tag='001']/subfield[@code='a']";
-
+	private static final FileCompression COMPRESSION = FileCompression.BZIP2;
 	private static final String INDEX = "hbz01-test";
-	private static final Settings CLIENT_SETTINGS = ImmutableSettings
-			.settingsBuilder().put("cluster.name", "lobid-wan")
-			.put("client.transport.sniff", false)
-			.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build();
+	private static final Builder CLIENT_SETTINGS = ImmutableSettings
+			.settingsBuilder().put("cluster.name", "lobid-wan");
 	private static final InetSocketTransportAddress NODE_1 =
 			new InetSocketTransportAddress("193.30.112.171", 9300);
 	private static final InetSocketTransportAddress NODE_2 =
 			new InetSocketTransportAddress("193.30.112.172", 9300);
+
+	private static final String X_PATH =
+			"/OAI-PMH/ListRecords/record/metadata/record/datafield[@tag='001']/subfield[@code='a']";
 
 	/** @param args Not used */
 	public static void main(String... args) {
@@ -48,9 +47,11 @@ public class Transform {
 		readDir.setRecursive(false);
 		readDir.setFilenamePattern(PATTERN);
 		FileOpener openFile = new FileOpener();
-		openFile.setCompression(FileCompression.BZIP2);
+		openFile.setCompression(COMPRESSION);
 		//@formatter:off
-		try (TransportClient tc = new TransportClient(CLIENT_SETTINGS);
+		try (TransportClient tc = new TransportClient(CLIENT_SETTINGS
+				.put("client.transport.sniff", false)
+				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
 				Client client = tc.addTransportAddress(NODE_1).addTransportAddress(NODE_2)) {
 			setIndexRefreshInterval(client, "-1");
 			readDir
