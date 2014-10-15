@@ -14,6 +14,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.text.translate.NumericEntityEscaper;
 import org.culturegraph.mf.framework.DefaultObjectPipe;
 import org.culturegraph.mf.framework.StreamReceiver;
 import org.w3c.dom.Document;
@@ -46,24 +48,26 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 		try (Scanner scanner = new Scanner(reader)) {
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
-				String hbzId = parseXml(line);
+				String hbzId =
+						parseXml(StringEscapeUtils.ESCAPE_XML.with(
+								NumericEntityEscaper.between(0x7f, Integer.MAX_VALUE))
+								.translate(line));
 				getReceiver().startRecord(hbzId);
 				getReceiver().literal("hbzId", hbzId);
 				getReceiver().literal("mabXml", line);
 				getReceiver().endRecord();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
-	private String parseXml(String line) throws IOException {
+	private String parseXml(String line) {
 		try {
+			// saxReader.parse(new InputSource(reader)):
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(new InputSource(new StringReader(line)));
 			return expression.evaluate(doc);
 		} catch (XPathExpressionException | ParserConfigurationException
-				| SAXException e) {
+				| SAXException | IOException e) {
 			System.err.println("Could no parse: " + line);
 			e.printStackTrace();
 		}
