@@ -1,5 +1,5 @@
 language: java
-jdk: oraclejdk7
+jdk: oraclejdk8
 before_install:
   - git clone https://github.com/hbz/metafacture-core.git
   - cd metafacture-core
