@@ -5,3 +5,5 @@ before_install:
   - cd metafacture-core
   - mvn clean install -DskipTests=true
   - cd ..
+install:
+  - mvn clean install -e -q -DskipTests=true
