@@ -1,6 +1,9 @@
 language: java
 jdk: oraclejdk8
 before_install:
+  - sudo rm /etc/mavenrc
+  - export M2_HOME=/usr/local/maven2
+  - export MAVEN_OPTS=Dmaven.repo.local=$HOME/.m2/repository -Xmx512m -XX:MaxPermSize=192m
   - git clone https://github.com/hbz/metafacture-core.git
   - cd metafacture-core
   - mvn clean install -DskipTests=true
