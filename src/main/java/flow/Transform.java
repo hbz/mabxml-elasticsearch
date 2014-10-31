@@ -1,6 +1,7 @@
 /* Copyright 2014  hbz, Pascal Christoph.
  * Licensed under the Eclipse Public License 1.0 */
-package org.lobid.lodmill;
+
+package flow;
 
 import org.culturegraph.mf.stream.converter.JsonEncoder;
 import org.culturegraph.mf.stream.pipe.ObjectLogger;
@@ -8,35 +9,27 @@ import org.culturegraph.mf.stream.source.DirReader;
 import org.culturegraph.mf.stream.source.FileOpener;
 import org.culturegraph.mf.stream.source.TarReader;
 import org.culturegraph.mf.util.FileCompression;
-import org.junit.Test;
 
 import pipe.ElasticsearchIndexer;
 import pipe.IdExtractor;
 
 /**
  * Gets tar bz2 archives of MAB XML clobs and index their records into an
- * elasticsearch instance. Acts as online test and can also be executed on
+ * Elasticsearch instance. Acts as online test and can also be executed on
  * command line.
- * 
+ *
+ * @author Fabian Steeg (fsteeg)
  * @author Pascal Christoph (dr0i)
- * 
+ *
  */
-@SuppressWarnings("javadoc")
-public final class MabXmlClobs2ElasticsearchOnlineTest {
+public final class Transform {
 
 	private static final String X_PATH =
 			"/OAI-PMH/ListRecords/record/metadata/record/datafield[@tag='001']/subfield[@code='a']";
 	private static final FileCompression COMPRESSION = FileCompression.BZIP2;
 
+	@SuppressWarnings("javadoc")
 	public static void main(String... args) {
-		MabXmlClobs2ElasticsearchOnlineTest mabXmlClobs2Elasticsearch =
-				new MabXmlClobs2ElasticsearchOnlineTest();
-		mabXmlClobs2Elasticsearch.testFlow();
-	}
-
-	@SuppressWarnings("static-method")
-	@Test
-	public void testFlow() {
 		// hbz catalog transformation
 		FileOpener openFile = new FileOpener();
 		openFile.setCompression(COMPRESSION);
