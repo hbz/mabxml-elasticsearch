@@ -40,7 +40,7 @@ public final class Transform {
 				.setReceiver(getIdExtractor()).setReceiver(new JsonEncoder())
 				.setReceiver(elasticsearchIndexer);
 		dirReader
-				.process("/files/open_data/closed/hbzvk/index.hbz-nrw.de/alephxml/clobs/updates_test");
+				.process("/files/open_data/closed/hbzvk/index.hbz-nrw.de/alephxml/clobs/updates");
 		elasticsearchIndexer.closeStream();
 		dirReader.closeStream();
 	}
