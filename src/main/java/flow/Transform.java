@@ -59,6 +59,7 @@ public final class Transform {
 		esIndexer.setHostname("193.30.112.171");
 		esIndexer.setIndexname("hbz01");
 		esIndexer.setIdKey("hbzId");
+		esIndexer.setIndextype("mabxml");
 		esIndexer.onSetReceiver();
 		return esIndexer;
 	}
