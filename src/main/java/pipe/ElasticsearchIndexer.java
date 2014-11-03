@@ -31,10 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Out(Void.class)
 public class ElasticsearchIndexer extends
 		DefaultObjectPipe<String, ObjectReceiver<Void>> {
-	private static void setIndexRefreshInterval(final Client client,
-			final Object setting) {
-		client.admin().indices()
-				.prepareUpdateSettings(ElasticsearchIndexer.indexname)
+	private void setIndexRefreshInterval(final Client client, final Object setting) {
+		client.admin().indices().prepareUpdateSettings(this.indexname)
 				.setSettings(ImmutableMap.of("index.refresh_interval", setting))
 				.execute().actionGet();
 	}
@@ -44,14 +42,14 @@ public class ElasticsearchIndexer extends
 	private String hostname;
 	private String clustername;
 
-	private static String indexname;
+	private String indexname;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private String idKey;
 
 	private IndexRequestBuilder indexRequest;
-	private static Builder CLIENT_SETTINGS;
-	private static InetSocketTransportAddress NODE;
-	private static String indextype;
+	private Builder CLIENT_SETTINGS;
+	private InetSocketTransportAddress NODE;
+	private String indextype;
 	private TransportClient tc;
 
 	private Client client;
@@ -77,33 +75,32 @@ public class ElasticsearchIndexer extends
 
 	@Override
 	protected void onCloseStream() {
-		ElasticsearchIndexer.setIndexRefreshInterval(this.client, "1");
+		this.setIndexRefreshInterval(this.client, "1");
 	}
 
 	@Override
 	public void onSetReceiver() {
-		ElasticsearchIndexer.CLIENT_SETTINGS =
+		this.CLIENT_SETTINGS =
 				ImmutableSettings.settingsBuilder().put("cluster.name",
 						this.clustername);
-		ElasticsearchIndexer.NODE =
-				new InetSocketTransportAddress(this.hostname, 9300);
+		this.NODE = new InetSocketTransportAddress(this.hostname, 9300);
 		this.tc =
-				new TransportClient(ElasticsearchIndexer.CLIENT_SETTINGS
+				new TransportClient(this.CLIENT_SETTINGS
 						.put("client.transport.sniff", false)
 						.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
-		this.client = this.tc.addTransportAddress(ElasticsearchIndexer.NODE);
-		ElasticsearchIndexer.setIndexRefreshInterval(this.client, "-1");
+		this.client = this.tc.addTransportAddress(this.NODE);
+		this.setIndexRefreshInterval(this.client, "-1");
 		this.indexRequest =
-				this.client.prepareIndex(ElasticsearchIndexer.indexname,
-						ElasticsearchIndexer.indextype);
+				this.client.prepareIndex(this.indexname, this.indextype);
 	}
 
 	@Override
 	public void process(final String obj) {
 		if (this.hostname == null || this.clustername == null
-				|| ElasticsearchIndexer.indexname == null) {
+				|| this.indexname == null || this.indextype == null
+				|| this.idKey == null) {
 			ElasticsearchIndexer.LOG
-					.error("Pass 3 params: <hostname> <clustername> <indexname>");
+					.error("Pass 3 params: <hostname> <clustername> <indexname> <indextype> <idkey>");
 			return;
 		}
 
@@ -149,7 +146,7 @@ public class ElasticsearchIndexer extends
 	 * @param indexname the name of the index
 	 */
 	public void setIndexname(final String indexname) {
-		ElasticsearchIndexer.indexname = indexname;
+		this.indexname = indexname;
 
 	}
 
@@ -159,7 +156,7 @@ public class ElasticsearchIndexer extends
 	 * @param indextype the name of the type of the index
 	 */
 	public void setIndextype(final String indextype) {
-		ElasticsearchIndexer.indextype = indextype;
+		this.indextype = indextype;
 
 	}
 
