@@ -34,13 +34,13 @@ public final class Transform {
 		FileOpener openFile = new FileOpener();
 		openFile.setCompression(COMPRESSION);
 		DirReader dirReader = new DirReader();
+		dirReader.setFilenamePattern(".*tar.bz2");
 		ElasticsearchIndexer elasticsearchIndexer = getElasticsearchIndexer();
 		dirReader.setReceiver(new ObjectLogger<String>("Directory reader: "))
 				.setReceiver(openFile).setReceiver(new TarReader())
 				.setReceiver(getIdExtractor()).setReceiver(new JsonEncoder())
 				.setReceiver(elasticsearchIndexer);
-		dirReader
-				.process("/files/open_data/closed/hbzvk/index.hbz-nrw.de/alephxml/clobs/updates");
+		dirReader.process("/files/open_data/open/DE-605/mabxml/");
 		elasticsearchIndexer.closeStream();
 		dirReader.closeStream();
 	}
