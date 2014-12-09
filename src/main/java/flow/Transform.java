@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.culturegraph.mf.stream.converter.JsonEncoder;
 import org.culturegraph.mf.stream.pipe.ObjectLogger;
-import org.culturegraph.mf.stream.reader.TarReader;
 import org.culturegraph.mf.stream.source.DirReader;
 import org.culturegraph.mf.stream.source.FileOpener;
+import org.culturegraph.mf.stream.source.TarReader;
 import org.culturegraph.mf.util.FileCompression;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
