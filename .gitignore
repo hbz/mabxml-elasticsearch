@@ -3,3 +3,15 @@ target/
 *.tar.bz2
 *.tar.gz
 *.out.*
+logs
+project/project
+project/target
+target
+tmp
+.history
+dist
+web/out
+web/.classpath
+web/.project
+web/.settings
+*~
