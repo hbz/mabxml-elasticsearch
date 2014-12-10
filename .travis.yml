@@ -13,3 +13,5 @@ script:
   - mvn test
   - cd web
   - ../activator-${ACTIVATOR_VERSION}-minimal/activator "test-only MabxmlApplicationTest"
+install:
+  - mvn clean install -e -q

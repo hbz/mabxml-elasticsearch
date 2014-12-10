@@ -1,8 +1,7 @@
-/* Copyright 2014 hbz, Fabian Steeg. Licensed under the Eclipse Public License 1.0 */
+/* Copyright 2014  hbz, Pascal Christoph.
+ * Licensed under the Eclipse Public License 1.0 */
 
 package flow;
-
-import java.util.concurrent.TimeUnit;
 
 import org.culturegraph.mf.stream.converter.JsonEncoder;
 import org.culturegraph.mf.stream.pipe.ObjectLogger;
@@ -10,71 +9,59 @@ import org.culturegraph.mf.stream.source.DirReader;
 import org.culturegraph.mf.stream.source.FileOpener;
 import org.culturegraph.mf.stream.source.TarReader;
 import org.culturegraph.mf.util.FileCompression;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.collect.ImmutableMap;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.ImmutableSettings.Builder;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 import pipe.ElasticsearchIndexer;
 import pipe.IdExtractor;
 
 /**
- * Transform MAB-XML to JSON and index in Elasticsearch.
- * 
+ * Gets tar bz2 archives of MAB XML clobs and index their records into an
+ * Elasticsearch instance. Acts as online test and can also be executed on
+ * command line.
+ *
  * @author Fabian Steeg (fsteeg)
+ * @author Pascal Christoph (dr0i)
+ *
  */
-public class Transform {
-
-	private static final String IN = "src/main/resources/input/";
-	private static final String PATTERN = ".*\\.tar.bz2";
-	private static final FileCompression COMPRESSION = FileCompression.BZIP2;
-	private static final String INDEX = "hbz01-test";
-	private static final Builder CLIENT_SETTINGS = ImmutableSettings
-			.settingsBuilder().put("cluster.name", "lobid-wan");
-	private static final InetSocketTransportAddress NODE_1 =
-			new InetSocketTransportAddress("193.30.112.171", 9300);
-	private static final InetSocketTransportAddress NODE_2 =
-			new InetSocketTransportAddress("193.30.112.172", 9300);
+public final class Transform {
 
 	private static final String X_PATH =
 			"/OAI-PMH/ListRecords/record/metadata/record/datafield[@tag='001']/subfield[@code='a']";
+	private static final FileCompression COMPRESSION = FileCompression.BZIP2;
 
-	/** @param args Not used */
+	@SuppressWarnings("javadoc")
 	public static void main(String... args) {
-		DirReader readDir = new DirReader();
-		readDir.setRecursive(false);
-		readDir.setFilenamePattern(PATTERN);
+		// hbz catalog transformation
 		FileOpener openFile = new FileOpener();
 		openFile.setCompression(COMPRESSION);
-		//@formatter:off
-		try (TransportClient tc = new TransportClient(CLIENT_SETTINGS
-				.put("client.transport.sniff", false)
-				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
-				Client client = tc.addTransportAddress(NODE_1).addTransportAddress(NODE_2)) {
-			setIndexRefreshInterval(client, "-1");
-			readDir
-					.setReceiver(new ObjectLogger<String>("Directory reader: "))
-					.setReceiver(openFile)
-					.setReceiver(new TarReader())
-					.setReceiver(new IdExtractor(X_PATH))
-					.setReceiver(new JsonEncoder())
-					.setReceiver(new ElasticsearchIndexer("hbzId", client.prepareIndex(INDEX, "mabxml")));
-			//@formatter:on
-			process(readDir);
-			setIndexRefreshInterval(client, "1");
-		}
-	}
-
-	static void process(DirReader dirReader) {
-		dirReader.process(IN);
+		DirReader dirReader = new DirReader();
+		dirReader.setFilenamePattern(".*tar.bz2");
+		ElasticsearchIndexer elasticsearchIndexer = getElasticsearchIndexer();
+		dirReader.setReceiver(new ObjectLogger<String>("Directory reader: "))
+				.setReceiver(openFile).setReceiver(new TarReader())
+				.setReceiver(getIdExtractor()).setReceiver(new JsonEncoder())
+				.setReceiver(elasticsearchIndexer);
+		dirReader.process("/files/open_data/open/DE-605/mabxml/");
+		elasticsearchIndexer.closeStream();
 		dirReader.closeStream();
 	}
 
-	private static void setIndexRefreshInterval(Client client, String setting) {
-		client.admin().indices().prepareUpdateSettings(INDEX)
-				.setSettings(ImmutableMap.of("index.refresh_interval", setting))
-				.execute().actionGet();
+	private static IdExtractor getIdExtractor() {
+		IdExtractor idExtractor = new IdExtractor();
+		idExtractor.setXPathToId(X_PATH);
+		idExtractor.setIdFieldName("hbzId");
+		idExtractor.setFullXmlFieldName("mabXml");
+		return idExtractor;
 	}
+
+	private static ElasticsearchIndexer getElasticsearchIndexer() {
+		ElasticsearchIndexer esIndexer = new ElasticsearchIndexer();
+		esIndexer.setClustername("quaoar");
+		esIndexer.setHostname("193.30.112.171");
+		esIndexer.setIndexname("hbz01");
+		esIndexer.setIdKey("hbzId");
+		esIndexer.setIndextype("mabxml");
+		esIndexer.onSetReceiver();
+		return esIndexer;
+	}
+
 }
