@@ -7,6 +7,6 @@
 @main(title) {
     <h1>@title</h1>
     <dl>
-    @desc("Get", routes.MabxmlApplication.get("HT017665866"))
+    @desc("Get", routes.MabxmlApplication.get(controllers.MabxmlApplication.CONFIG.getString("sample.doc")))
 	</dl>
 }
