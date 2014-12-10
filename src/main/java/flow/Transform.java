@@ -26,7 +26,7 @@ public final class Transform {
 
 	private static final String X_PATH =
 			"/OAI-PMH/ListRecords/record/metadata/record/datafield[@tag='001']/subfield[@code='a']";
-	private static final FileCompression COMPRESSION = FileCompression.BZIP2;
+	private static final FileCompression COMPRESSION = FileCompression.GZIP;
 
 	@SuppressWarnings("javadoc")
 	public static void main(String... args) {
@@ -34,7 +34,7 @@ public final class Transform {
 		FileOpener openFile = new FileOpener();
 		openFile.setCompression(COMPRESSION);
 		DirReader dirReader = new DirReader();
-		dirReader.setFilenamePattern(".*tar.bz2");
+		dirReader.setFilenamePattern(".*tar.gz");
 		ElasticsearchIndexer elasticsearchIndexer = getElasticsearchIndexer();
 		dirReader.setReceiver(new ObjectLogger<String>("Directory reader: "))
 				.setReceiver(openFile).setReceiver(new TarReader())
