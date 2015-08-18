@@ -8,7 +8,6 @@ import org.culturegraph.mf.stream.pipe.ObjectLogger;
 import org.culturegraph.mf.stream.source.DirReader;
 import org.culturegraph.mf.stream.source.FileOpener;
 import org.culturegraph.mf.stream.source.TarReader;
-import org.culturegraph.mf.util.FileCompression;
 
 import pipe.ElasticsearchIndexer;
 import pipe.IdExtractor;
@@ -26,21 +25,27 @@ public final class Transform {
 
 	private static final String X_PATH =
 			"/OAI-PMH/ListRecords/record/metadata/record/datafield[@tag='001']/subfield[@code='a']";
-	private static final FileCompression COMPRESSION = FileCompression.GZIP;
+
+	private static final String DIR = "/files/open_data/open/DE-605/mabxml/";
+	private static final String SUFFIX = "gz";
+	private static final String CLUSTER = "quaoar";
+	private static final String HOSTNAME = "193.30.112.171";
 
 	@SuppressWarnings("javadoc")
 	public static void main(String... args) {
 		// hbz catalog transformation
 		FileOpener openFile = new FileOpener();
-		openFile.setCompression(COMPRESSION);
 		DirReader dirReader = new DirReader();
-		dirReader.setFilenamePattern(".*tar.gz");
-		ElasticsearchIndexer elasticsearchIndexer = getElasticsearchIndexer();
+		dirReader.setFilenamePattern(
+				args.length == 4 ? ".*tar." + args[1] : ".*tar." + SUFFIX);
+		ElasticsearchIndexer elasticsearchIndexer =
+				getElasticsearchIndexer(args.length == 4 ? args[2] : CLUSTER,
+						args.length == 4 ? args[3] : HOSTNAME);
 		dirReader.setReceiver(new ObjectLogger<String>("Directory reader: "))
 				.setReceiver(openFile).setReceiver(new TarReader())
 				.setReceiver(getIdExtractor()).setReceiver(new JsonEncoder())
 				.setReceiver(elasticsearchIndexer);
-		dirReader.process("/files/open_data/open/DE-605/mabxml/");
+		dirReader.process(args.length == 4 ? args[0] : DIR);
 		elasticsearchIndexer.closeStream();
 		dirReader.closeStream();
 	}
@@ -53,10 +58,11 @@ public final class Transform {
 		return idExtractor;
 	}
 
-	private static ElasticsearchIndexer getElasticsearchIndexer() {
+	private static ElasticsearchIndexer getElasticsearchIndexer(
+			final String cluster, final String hostname) {
 		ElasticsearchIndexer esIndexer = new ElasticsearchIndexer();
-		esIndexer.setClustername("quaoar");
-		esIndexer.setHostname("193.30.112.171");
+		esIndexer.setClustername(cluster);
+		esIndexer.setHostname(hostname);
 		esIndexer.setIndexname("hbz01");
 		esIndexer.setIdKey("hbzId");
 		esIndexer.setIndextype("mabxml");

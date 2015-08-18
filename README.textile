@@ -36,20 +36,24 @@ Download the sample input data:
 
 Go to the project root and run the transformation:
 
-* @cd ../../../../ ; mvn exec:java -Dexec.mainClass="flow.Transform"@
+* @cd ../../../../ ; mvn exec:java -Dexec.mainClass="flow.Transform" -Dexec.args="src/main/resources/input/ bz2 lobid-hbz 193.30.112.170"@
 
 This will index the data in an hbz-internal Elasticsearch instance (only works hbz internally).
 
 You can then GET a specific record by hbz ID:
 
-* @curl -XGET 'http://quaoar2.hbz-nrw.de:9200/hbz01/mabxml/HT012786619'; echo@
+* @curl -XGET 'http://quaoar1.hbz-nrw.de:9200/hbz01/mabxml/HT012786619'; echo@
 
 You can also exclude the Elasticsearch metadata:
 
-* @curl -XGET 'http://quaoar2.hbz-nrw.de:9200/hbz01/mabxml/HT012786619/_source'; echo@
+* @curl -XGET 'http://quaoar1.hbz-nrw.de:9200/hbz01/mabxml/HT012786619/_source'; echo@
 
 For details on the various options see the "GET API documentation":http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-get.html.
 
 h1. License
 
 Eclipse Public License: "http://www.eclipse.org/legal/epl-v10.html":http://www.eclipse.org/legal/epl-v10.html
+
+h1. Internal information
+Startscripts are triggered in crontab of `hduser@weywot1`. Trace these entries to fully understand *what* and *when* something is done.
+
