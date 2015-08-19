@@ -10,6 +10,7 @@ target
 tmp
 .history
 dist
+web/data
 web/out
 web/.classpath
 web/.project
