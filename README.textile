@@ -55,5 +55,6 @@ h1. License
 Eclipse Public License: "http://www.eclipse.org/legal/epl-v10.html":http://www.eclipse.org/legal/epl-v10.html
 
 h1. Internal information
-Startscripts are triggered in crontab of `hduser@weywot1`. Trace these entries to fully understand *what* and *when* something is done.
+
+Startscripts are triggered in crontab of _hduser@weywot1_. Trace these entries to fully understand *what* and *when* something is done.
 
