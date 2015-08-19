@@ -50,8 +50,8 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(IdExtractor.class);
 	private static XPathExpression expression;
-	private static DocumentBuilderFactory factory = DocumentBuilderFactory
-			.newInstance();
+	private static DocumentBuilderFactory factory =
+			DocumentBuilderFactory.newInstance();
 	private static String idFieldName;
 
 	private static String fullXmlFieldName;

@@ -29,16 +29,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @In(String.class)
 @Out(Void.class)
-public class ElasticsearchIndexer extends
-		DefaultObjectPipe<String, ObjectReceiver<Void>> {
-	private void setIndexRefreshInterval(final Client client, final Object setting) {
+public class ElasticsearchIndexer
+		extends DefaultObjectPipe<String, ObjectReceiver<Void>> {
+	private void setIndexRefreshInterval(final Client client,
+			final Object setting) {
 		client.admin().indices().prepareUpdateSettings(this.indexname)
 				.setSettings(ImmutableMap.of("index.refresh_interval", setting))
 				.execute().actionGet();
 	}
 
-	private static final Logger LOG = LoggerFactory
-			.getLogger(ElasticsearchIndexer.class);
+	private static final Logger LOG =
+			LoggerFactory.getLogger(ElasticsearchIndexer.class);
 	private String hostname;
 	private String clustername;
 
@@ -80,14 +81,12 @@ public class ElasticsearchIndexer extends
 
 	@Override
 	public void onSetReceiver() {
-		this.CLIENT_SETTINGS =
-				ImmutableSettings.settingsBuilder().put("cluster.name",
-						this.clustername);
+		this.CLIENT_SETTINGS = ImmutableSettings.settingsBuilder()
+				.put("cluster.name", this.clustername);
 		this.NODE = new InetSocketTransportAddress(this.hostname, 9300);
-		this.tc =
-				new TransportClient(this.CLIENT_SETTINGS
-						.put("client.transport.sniff", false)
-						.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
+		this.tc = new TransportClient(this.CLIENT_SETTINGS
+				.put("client.transport.sniff", false)
+				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
 		this.client = this.tc.addTransportAddress(this.NODE);
 		this.setIndexRefreshInterval(this.client, "-1");
 		this.indexRequest =
@@ -99,8 +98,8 @@ public class ElasticsearchIndexer extends
 		if (this.hostname == null || this.clustername == null
 				|| this.indexname == null || this.indextype == null
 				|| this.idKey == null) {
-			ElasticsearchIndexer.LOG
-					.error("Pass 3 params: <hostname> <clustername> <indexname> <indextype> <idkey>");
+			ElasticsearchIndexer.LOG.error(
+					"Pass 3 params: <hostname> <clustername> <indexname> <indextype> <idkey>");
 			return;
 		}
 
