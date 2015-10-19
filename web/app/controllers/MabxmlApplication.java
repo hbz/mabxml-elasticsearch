@@ -2,10 +2,6 @@ package controllers;
 
 import java.io.File;
 
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.node.NodeBuilder;
-
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -25,7 +21,11 @@ public class MabxmlApplication extends Controller {
 
 	public static final Config CONFIG = ConfigFactory.parseFile(
 			new File("conf/application.conf")).resolve();
+	private static final String _SOURCE = "_source";
 	private static final String MABXML_ELASTICSEARCH = "mabxml-elasticsearch";
+	private static final String SERVER = CONFIG.getString("es.server");
+	private static final String PORT = ":9200";
+	private static final String ES_SERVER = "http://" + SERVER + PORT;
 	private static final String ES_INDEX = CONFIG.getString("es.index");
 	private static final String ES_TYPE = "mabxml";
 	private static final String GET_KEY = "mabXml";
@@ -39,20 +39,11 @@ public class MabxmlApplication extends Controller {
 	 * @return The source of a document as JSON
 	 */
 	public static Promise<Result> get(String id) {
-		
-		play.Logger.info("Calling elasticsearch:: index: {}, type: {}, id: {}", ES_INDEX, ES_TYPE, id);
-		
-		Client client = NodeBuilder.nodeBuilder().node().client();
-
-		GetResponse response = client.prepareGet(ES_INDEX, ES_TYPE, id)
-		        .execute()
-		        .actionGet();
-		Object object = response.getSource().get(GET_KEY);
-		
+		String url =
+				String.format("%s/%s/%s/%s/" + _SOURCE, ES_SERVER, ES_INDEX, ES_TYPE, id);
 		response().setContentType("text/xml");
-		play.Logger.info(object.toString());
-		
-		return Promise.promise(() -> ok(object.toString()));
+		play.Logger.info("Calling URL: " + url);
+		return WS.url(url).execute().map(x -> ok(x.asJson().get(GET_KEY).asText()));
 	}
 }
 	
