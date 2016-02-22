@@ -41,8 +41,7 @@ public class MabxmlApplication extends Controller {
 	public static Promise<Result> get(String id) {
 		String url =
 				String.format("%s/%s/%s/%s/" + _SOURCE, ES_SERVER, ES_INDEX, ES_TYPE, id);
-		response().setContentType("text/xml");
-		response().setHeader(CONTENT_TYPE, "charset: utf-8");
+		response().setContentType("text/xml; charset: utf-8");
 		play.Logger.info("Calling URL: " + url);
 		return WS.url(url).execute().map(x -> ok(x.asJson().get(GET_KEY).asText()));
 	}
