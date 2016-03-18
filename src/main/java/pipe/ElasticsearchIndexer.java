@@ -8,9 +8,10 @@ import org.culturegraph.mf.framework.DefaultObjectPipe;
 import org.culturegraph.mf.framework.ObjectReceiver;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.collect.ImmutableMap;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -56,22 +57,61 @@ public class ElasticsearchIndexer
 	private Client client;
 
 	private void index(final Map<String, Object> json, final String id) {
+		if (id.isEmpty()) {
+			return;
+		}
 		int retries = 40;
 		while (retries > 0) {
 			try {
-				this.indexRequest.setId(id).setSource(json).execute();
+				indexAsync(json, id, 10);
 				break; // stop retry-while
-			} catch (final NoNodeAvailableException e) {
+			} catch (final Throwable t) {
 				retries--;
+				if (retries == 0) {
+					logFailure(id, t);
+					return;
+				}
 				try {
 					Thread.sleep(10000);
 				} catch (final InterruptedException x) {
 					x.printStackTrace();
 				}
-				System.err.printf("Retry indexing record %s: %s (%s more retries)\n",
-						id, e.getMessage(), retries);
+				LOG.debug("Retry indexing record {} after: {} ({} more retries)", id,
+						t.getMessage(), retries);
 			}
 		}
+	}
+
+	private void indexAsync(final Map<String, Object> json, final String id,
+			int retries) {
+		this.indexRequest.setId(id).setSource(json).execute()
+				.addListener(new ActionListener<IndexResponse>() {
+					@Override
+					public void onResponse(IndexResponse response) {
+						LOG.trace("Indexed: {}", id);
+					}
+
+					@Override
+					public void onFailure(Throwable t) {
+						if (retries == 0) {
+							logFailure(id, t);
+							return;
+						}
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						LOG.trace("Retry indexing record {} after: {} ({} more retries)",
+								id, t.getMessage(), retries);
+						indexAsync(json, id, retries - 1);
+					}
+				});
+	}
+
+	private static void logFailure(final String id, final Throwable t) {
+		LOG.error("Indexing record {} failed with: {}", id, t.getMessage());
+		t.printStackTrace();
 	}
 
 	@Override
