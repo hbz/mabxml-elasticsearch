@@ -30,6 +30,7 @@ public final class Transform {
 	private static final String SUFFIX = "gz";
 	private static final String CLUSTER = "quaoar";
 	private static final String HOSTNAME = "193.30.112.171";
+	private static final String INDEX = "hbz01-test";
 
 	@SuppressWarnings("javadoc")
 	public static void main(String... args) {
@@ -63,7 +64,7 @@ public final class Transform {
 		ElasticsearchIndexer esIndexer = new ElasticsearchIndexer();
 		esIndexer.setClustername(cluster);
 		esIndexer.setHostname(hostname);
-		esIndexer.setIndexname("hbz01");
+		esIndexer.setIndexname(INDEX);
 		esIndexer.setIdKey("hbzId");
 		esIndexer.setIndextype("mabxml");
 		esIndexer.onSetReceiver();
