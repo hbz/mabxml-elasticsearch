@@ -1,6 +1,9 @@
 package pipe;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -12,8 +15,10 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.collect.ImmutableMap;
+import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -37,6 +42,20 @@ public class ElasticsearchIndexer
 		client.admin().indices().prepareUpdateSettings(this.indexname)
 				.setSettings(ImmutableMap.of("index.refresh_interval", setting))
 				.execute().actionGet();
+	}
+
+	private static String config() {
+		String res = null;
+		try {
+			final InputStream config =
+					new FileInputStream("src/main/resources/index-config.json");
+			try (InputStreamReader reader = new InputStreamReader(config, "UTF-8")) {
+				res = Streams.copyToString(reader);
+			}
+		} catch (IOException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return res;
 	}
 
 	private static final Logger LOG =
@@ -128,6 +147,10 @@ public class ElasticsearchIndexer
 				.put("client.transport.sniff", false)
 				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
 		this.client = this.tc.addTransportAddress(this.NODE);
+		final IndicesAdminClient admin = this.client.admin().indices();
+		if (!admin.prepareExists(indexname).execute().actionGet().isExists()) {
+			admin.prepareCreate(indexname).setSource(config()).execute().actionGet();
+		}
 		this.setIndexRefreshInterval(this.client, "-1");
 		this.indexRequest =
 				this.client.prepareIndex(this.indexname, this.indextype);
@@ -139,7 +162,7 @@ public class ElasticsearchIndexer
 				|| this.indexname == null || this.indextype == null
 				|| this.idKey == null) {
 			ElasticsearchIndexer.LOG.error(
-					"Pass 3 params: <hostname> <clustername> <indexname> <indextype> <idkey>");
+					"Pass params: <hostname> <clustername> <indexname> <indextype> <idkey>");
 			return;
 		}
 
