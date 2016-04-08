@@ -19,7 +19,6 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.collect.ImmutableMap;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +36,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ElasticsearchIndexer
 		extends DefaultObjectPipe<String, ObjectReceiver<Void>> {
 
+	private static final Logger LOG =
+			LoggerFactory.getLogger(ElasticsearchIndexer.class);
+	private final ObjectMapper mapper = new ObjectMapper();
+
+	private String hostName;
+	private String clusterName;
+	private String indexName;
+	private String idKey;
+	private String indexType;
+
+	private TransportClient tc;
+	private Client client;
+	private BulkRequestBuilder bulkRequest;
+	private int pendingIndexRequests;
+
 	private void setIndexRefreshInterval(final Client client,
 			final Object setting) {
-		client.admin().indices().prepareUpdateSettings(this.indexname)
+		client.admin().indices().prepareUpdateSettings(indexName)
 				.setSettings(ImmutableMap.of("index.refresh_interval", setting))
 				.execute().actionGet();
 	}
@@ -58,30 +72,12 @@ public class ElasticsearchIndexer
 		return res;
 	}
 
-	private static final Logger LOG =
-			LoggerFactory.getLogger(ElasticsearchIndexer.class);
-	private String hostname;
-	private String clustername;
-
-	private String indexname;
-	private final ObjectMapper mapper = new ObjectMapper();
-	private String idKey;
-
-	private Builder CLIENT_SETTINGS;
-	private InetSocketTransportAddress NODE;
-	private String indextype;
-	private TransportClient tc;
-
-	private Client client;
-	private BulkRequestBuilder bulkRequest;
-	private int pendingIndexRequests;
-
 	private void index(final Map<String, Object> json, final String id) {
 		if (id.isEmpty()) {
 			return;
 		}
 		bulkRequest
-				.add(client.prepareIndex(indexname, indextype, id).setSource(json));
+				.add(client.prepareIndex(indexName, indexType, id).setSource(json));
 		pendingIndexRequests++;
 		if (pendingIndexRequests == 1000) {
 			executeBulk();
@@ -107,40 +103,39 @@ public class ElasticsearchIndexer
 		if (pendingIndexRequests > 0) {
 			executeBulk();
 		}
-		this.setIndexRefreshInterval(this.client, "1");
+		setIndexRefreshInterval(client, "1");
+		client.close();
 	}
 
 	@Override
 	public void onSetReceiver() {
-		this.CLIENT_SETTINGS = ImmutableSettings.settingsBuilder()
-				.put("cluster.name", this.clustername);
-		this.NODE = new InetSocketTransportAddress(this.hostname, 9300);
-		this.tc = new TransportClient(this.CLIENT_SETTINGS
-				.put("client.transport.sniff", false)
+		ImmutableSettings.Builder clientSettings =
+				ImmutableSettings.settingsBuilder().put("cluster.name", clusterName);
+		InetSocketTransportAddress node =
+				new InetSocketTransportAddress(hostName, 9300);
+		tc = new TransportClient(clientSettings.put("client.transport.sniff", false)
 				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
-		this.client = this.tc.addTransportAddress(this.NODE);
-		final IndicesAdminClient admin = this.client.admin().indices();
-		if (!admin.prepareExists(indexname).execute().actionGet().isExists()) {
-			admin.prepareCreate(indexname).setSource(config()).execute().actionGet();
+		client = tc.addTransportAddress(node);
+		final IndicesAdminClient admin = client.admin().indices();
+		if (!admin.prepareExists(indexName).execute().actionGet().isExists()) {
+			admin.prepareCreate(indexName).setSource(config()).execute().actionGet();
 		}
-		this.setIndexRefreshInterval(this.client, "-1");
-		this.bulkRequest = client.prepareBulk();
-		this.pendingIndexRequests = 0;
+		setIndexRefreshInterval(client, "-1");
+		bulkRequest = client.prepareBulk();
+		pendingIndexRequests = 0;
 	}
 
 	@Override
 	public void process(final String obj) {
-		if (this.hostname == null || this.clustername == null
-				|| this.indexname == null || this.indextype == null
-				|| this.idKey == null) {
+		if (hostName == null || clusterName == null || indexName == null
+				|| indexType == null || idKey == null) {
 			ElasticsearchIndexer.LOG.error(
-					"Pass params: <hostname> <clustername> <indexname> <indextype> <idkey>");
+					"Set params: <host name> <cluster name> <index name> <index type> <id key>");
 			return;
 		}
-
 		try {
-			final Map<String, Object> json = this.mapper.readValue(obj, Map.class);
-			final String id = (String) json.get(this.idKey);
+			final Map<String, Object> json = mapper.readValue(obj, Map.class);
+			final String id = (String) json.get(idKey);
 			index(json, id);
 		} catch (final IOException e) {
 			e.printStackTrace();
@@ -150,19 +145,19 @@ public class ElasticsearchIndexer
 	/**
 	 * Sets the elasticsearch cluster name.
 	 *
-	 * @param clustername the name of the cluster
+	 * @param clusterName the name of the cluster
 	 */
-	public void setClustername(final String clustername) {
-		this.clustername = clustername;
+	public void setClusterName(final String clusterName) {
+		this.clusterName = clusterName;
 	}
 
 	/**
-	 * Sets the elasticsearch hostname
+	 * Sets the elasticsearch host name
 	 *
-	 * @param hostname may be an IP or a domain name
+	 * @param hostName may be an IP or a domain name
 	 */
-	public void setHostname(final String hostname) {
-		this.hostname = hostname;
+	public void setHostName(final String hostName) {
+		this.hostName = hostName;
 	}
 
 	/**
@@ -177,21 +172,20 @@ public class ElasticsearchIndexer
 	/**
 	 * Sets the elasticsearch index name.
 	 *
-	 * @param indexname the name of the index
+	 * @param indexName the name of the index
 	 */
-	public void setIndexname(final String indexname) {
-		this.indexname = indexname;
+	public void setIndexName(final String indexName) {
+		this.indexName = indexName;
 
 	}
 
 	/**
 	 * Sets the name of the elasticsearch index type .
 	 *
-	 * @param indextype the name of the type of the index
+	 * @param indexType the name of the type of the index
 	 */
-	public void setIndextype(final String indextype) {
-		this.indextype = indextype;
-
+	public void setIndexType(final String indexType) {
+		this.indexType = indexType;
 	}
 
 }

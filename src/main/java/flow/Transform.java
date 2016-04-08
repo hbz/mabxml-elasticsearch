@@ -63,13 +63,13 @@ public final class Transform {
 	}
 
 	private static ElasticsearchIndexer getElasticsearchIndexer(
-			final String cluster, final String hostname, final String index) {
+			final String cluster, final String hostName, final String index) {
 		ElasticsearchIndexer esIndexer = new ElasticsearchIndexer();
-		esIndexer.setClustername(cluster);
-		esIndexer.setHostname(hostname);
-		esIndexer.setIndexname(index);
+		esIndexer.setClusterName(cluster);
+		esIndexer.setHostName(hostName);
+		esIndexer.setIndexName(index);
 		esIndexer.setIdKey("hbzId");
-		esIndexer.setIndextype("mabxml");
+		esIndexer.setIndexType("mabxml");
 		esIndexer.onSetReceiver();
 		return esIndexer;
 	}
