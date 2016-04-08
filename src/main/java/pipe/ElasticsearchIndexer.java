@@ -11,9 +11,8 @@ import org.culturegraph.mf.framework.DefaultObjectPipe;
 import org.culturegraph.mf.framework.ObjectReceiver;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.TransportClient;
@@ -37,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Out(Void.class)
 public class ElasticsearchIndexer
 		extends DefaultObjectPipe<String, ObjectReceiver<Void>> {
+
 	private void setIndexRefreshInterval(final Client client,
 			final Object setting) {
 		client.admin().indices().prepareUpdateSettings(this.indexname)
@@ -67,74 +67,46 @@ public class ElasticsearchIndexer
 	private final ObjectMapper mapper = new ObjectMapper();
 	private String idKey;
 
-	private IndexRequestBuilder indexRequest;
 	private Builder CLIENT_SETTINGS;
 	private InetSocketTransportAddress NODE;
 	private String indextype;
 	private TransportClient tc;
 
 	private Client client;
+	private BulkRequestBuilder bulkRequest;
+	private int pendingIndexRequests;
 
 	private void index(final Map<String, Object> json, final String id) {
 		if (id.isEmpty()) {
 			return;
 		}
-		int retries = 40;
-		while (retries > 0) {
-			try {
-				indexAsync(json, id, 10);
-				break; // stop retry-while
-			} catch (final Throwable t) {
-				retries--;
-				if (retries == 0) {
-					logFailure(id, t);
-					return;
-				}
-				try {
-					Thread.sleep(10000);
-				} catch (final InterruptedException x) {
-					x.printStackTrace();
-				}
-				LOG.debug("Retry indexing record {} after: {} ({} more retries)", id,
-						t.getMessage(), retries);
-			}
+		bulkRequest
+				.add(client.prepareIndex(indexname, indextype, id).setSource(json));
+		pendingIndexRequests++;
+		if (pendingIndexRequests == 1000) {
+			executeBulk();
+			bulkRequest = client.prepareBulk();
+			pendingIndexRequests = 0;
 		}
 	}
 
-	private void indexAsync(final Map<String, Object> json, final String id,
-			int retries) {
-		this.indexRequest.setId(id).setSource(json).execute()
-				.addListener(new ActionListener<IndexResponse>() {
-					@Override
-					public void onResponse(IndexResponse response) {
-						LOG.trace("Indexed: {}", id);
-					}
-
-					@Override
-					public void onFailure(Throwable t) {
-						if (retries == 0) {
-							logFailure(id, t);
-							return;
-						}
-						try {
-							Thread.sleep(100);
-						} catch (InterruptedException e) {
-							logFailure(id, e);
-						}
-						LOG.trace("Retry indexing record {} after: {} ({} more retries)",
-								id, t.getMessage(), retries);
-						indexAsync(json, id, retries - 1);
-					}
-				});
-	}
-
-	private static void logFailure(final String id, final Throwable t) {
-		LOG.error("Indexing record {} failed with: {} ({})", id, t.getMessage(),
-				t.getCause() == null ? "no cause" : t.getCause().getMessage());
+	private void executeBulk() {
+		BulkResponse bulkResponse = bulkRequest.execute().actionGet();
+		if (bulkResponse.hasFailures()) {
+			bulkResponse.forEach(item -> {
+				if (item.isFailed()) {
+					LOG.error("Indexing {} failed: {}", item.getId(),
+							item.getFailureMessage());
+				}
+			});
+		}
 	}
 
 	@Override
 	protected void onCloseStream() {
+		if (pendingIndexRequests > 0) {
+			executeBulk();
+		}
 		this.setIndexRefreshInterval(this.client, "1");
 	}
 
@@ -152,8 +124,8 @@ public class ElasticsearchIndexer
 			admin.prepareCreate(indexname).setSource(config()).execute().actionGet();
 		}
 		this.setIndexRefreshInterval(this.client, "-1");
-		this.indexRequest =
-				this.client.prepareIndex(this.indexname, this.indextype);
+		this.bulkRequest = client.prepareBulk();
+		this.pendingIndexRequests = 0;
 	}
 
 	@Override
