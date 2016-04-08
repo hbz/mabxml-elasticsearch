@@ -119,7 +119,7 @@ public class ElasticsearchIndexer
 						try {
 							Thread.sleep(100);
 						} catch (InterruptedException e) {
-							e.printStackTrace();
+							logFailure(id, e);
 						}
 						LOG.trace("Retry indexing record {} after: {} ({} more retries)",
 								id, t.getMessage(), retries);
@@ -129,8 +129,8 @@ public class ElasticsearchIndexer
 	}
 
 	private static void logFailure(final String id, final Throwable t) {
-		LOG.error("Indexing record {} failed with: {}", id, t.getMessage());
-		t.printStackTrace();
+		LOG.error("Indexing record {} failed with: {} ({})", id, t.getMessage(),
+				t.getCause() == null ? "no cause" : t.getCause().getMessage());
 	}
 
 	@Override
