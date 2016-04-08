@@ -1,6 +1,9 @@
 package pipe;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -8,13 +11,14 @@ import org.culturegraph.mf.framework.DefaultObjectPipe;
 import org.culturegraph.mf.framework.ObjectReceiver;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
-import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.NoNodeAvailableException;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.collect.ImmutableMap;
+import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,81 +35,107 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Out(Void.class)
 public class ElasticsearchIndexer
 		extends DefaultObjectPipe<String, ObjectReceiver<Void>> {
+
+	private static final Logger LOG =
+			LoggerFactory.getLogger(ElasticsearchIndexer.class);
+	private final ObjectMapper mapper = new ObjectMapper();
+
+	private String hostName;
+	private String clusterName;
+	private String indexName;
+	private String idKey;
+	private String indexType;
+
+	private TransportClient tc;
+	private Client client;
+	private BulkRequestBuilder bulkRequest;
+	private int pendingIndexRequests;
+
 	private void setIndexRefreshInterval(final Client client,
 			final Object setting) {
-		client.admin().indices().prepareUpdateSettings(this.indexname)
+		client.admin().indices().prepareUpdateSettings(indexName)
 				.setSettings(ImmutableMap.of("index.refresh_interval", setting))
 				.execute().actionGet();
 	}
 
-	private static final Logger LOG =
-			LoggerFactory.getLogger(ElasticsearchIndexer.class);
-	private String hostname;
-	private String clustername;
-
-	private String indexname;
-	private final ObjectMapper mapper = new ObjectMapper();
-	private String idKey;
-
-	private IndexRequestBuilder indexRequest;
-	private Builder CLIENT_SETTINGS;
-	private InetSocketTransportAddress NODE;
-	private String indextype;
-	private TransportClient tc;
-
-	private Client client;
+	private static String config() {
+		String res = null;
+		try {
+			final InputStream config =
+					new FileInputStream("src/main/resources/index-config.json");
+			try (InputStreamReader reader = new InputStreamReader(config, "UTF-8")) {
+				res = Streams.copyToString(reader);
+			}
+		} catch (IOException e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return res;
+	}
 
 	private void index(final Map<String, Object> json, final String id) {
-		int retries = 40;
-		while (retries > 0) {
-			try {
-				this.indexRequest.setId(id).setSource(json).execute();
-				break; // stop retry-while
-			} catch (final NoNodeAvailableException e) {
-				retries--;
-				try {
-					Thread.sleep(10000);
-				} catch (final InterruptedException x) {
-					x.printStackTrace();
+		if (id.isEmpty()) {
+			return;
+		}
+		bulkRequest
+				.add(client.prepareIndex(indexName, indexType, id).setSource(json));
+		pendingIndexRequests++;
+		if (pendingIndexRequests == 1000) {
+			executeBulk();
+			bulkRequest = client.prepareBulk();
+			pendingIndexRequests = 0;
+		}
+	}
+
+	private void executeBulk() {
+		BulkResponse bulkResponse = bulkRequest.execute().actionGet();
+		if (bulkResponse.hasFailures()) {
+			bulkResponse.forEach(item -> {
+				if (item.isFailed()) {
+					LOG.error("Indexing {} failed: {}", item.getId(),
+							item.getFailureMessage());
 				}
-				System.err.printf("Retry indexing record %s: %s (%s more retries)\n",
-						id, e.getMessage(), retries);
-			}
+			});
 		}
 	}
 
 	@Override
 	protected void onCloseStream() {
-		this.setIndexRefreshInterval(this.client, "1");
+		if (pendingIndexRequests > 0) {
+			executeBulk();
+		}
+		setIndexRefreshInterval(client, "1");
+		client.close();
 	}
 
 	@Override
 	public void onSetReceiver() {
-		this.CLIENT_SETTINGS = ImmutableSettings.settingsBuilder()
-				.put("cluster.name", this.clustername);
-		this.NODE = new InetSocketTransportAddress(this.hostname, 9300);
-		this.tc = new TransportClient(this.CLIENT_SETTINGS
-				.put("client.transport.sniff", false)
+		ImmutableSettings.Builder clientSettings =
+				ImmutableSettings.settingsBuilder().put("cluster.name", clusterName);
+		InetSocketTransportAddress node =
+				new InetSocketTransportAddress(hostName, 9300);
+		tc = new TransportClient(clientSettings.put("client.transport.sniff", false)
 				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
-		this.client = this.tc.addTransportAddress(this.NODE);
-		this.setIndexRefreshInterval(this.client, "-1");
-		this.indexRequest =
-				this.client.prepareIndex(this.indexname, this.indextype);
+		client = tc.addTransportAddress(node);
+		final IndicesAdminClient admin = client.admin().indices();
+		if (!admin.prepareExists(indexName).execute().actionGet().isExists()) {
+			admin.prepareCreate(indexName).setSource(config()).execute().actionGet();
+		}
+		setIndexRefreshInterval(client, "-1");
+		bulkRequest = client.prepareBulk();
+		pendingIndexRequests = 0;
 	}
 
 	@Override
 	public void process(final String obj) {
-		if (this.hostname == null || this.clustername == null
-				|| this.indexname == null || this.indextype == null
-				|| this.idKey == null) {
+		if (hostName == null || clusterName == null || indexName == null
+				|| indexType == null || idKey == null) {
 			ElasticsearchIndexer.LOG.error(
-					"Pass 3 params: <hostname> <clustername> <indexname> <indextype> <idkey>");
+					"Set params: <host name> <cluster name> <index name> <index type> <id key>");
 			return;
 		}
-
 		try {
-			final Map<String, Object> json = this.mapper.readValue(obj, Map.class);
-			final String id = (String) json.get(this.idKey);
+			final Map<String, Object> json = mapper.readValue(obj, Map.class);
+			final String id = (String) json.get(idKey);
 			index(json, id);
 		} catch (final IOException e) {
 			e.printStackTrace();
@@ -115,19 +145,19 @@ public class ElasticsearchIndexer
 	/**
 	 * Sets the elasticsearch cluster name.
 	 *
-	 * @param clustername the name of the cluster
+	 * @param clusterName the name of the cluster
 	 */
-	public void setClustername(final String clustername) {
-		this.clustername = clustername;
+	public void setClusterName(final String clusterName) {
+		this.clusterName = clusterName;
 	}
 
 	/**
-	 * Sets the elasticsearch hostname
+	 * Sets the elasticsearch host name
 	 *
-	 * @param hostname may be an IP or a domain name
+	 * @param hostName may be an IP or a domain name
 	 */
-	public void setHostname(final String hostname) {
-		this.hostname = hostname;
+	public void setHostName(final String hostName) {
+		this.hostName = hostName;
 	}
 
 	/**
@@ -142,21 +172,20 @@ public class ElasticsearchIndexer
 	/**
 	 * Sets the elasticsearch index name.
 	 *
-	 * @param indexname the name of the index
+	 * @param indexName the name of the index
 	 */
-	public void setIndexname(final String indexname) {
-		this.indexname = indexname;
+	public void setIndexName(final String indexName) {
+		this.indexName = indexName;
 
 	}
 
 	/**
 	 * Sets the name of the elasticsearch index type .
 	 *
-	 * @param indextype the name of the type of the index
+	 * @param indexType the name of the type of the index
 	 */
-	public void setIndextype(final String indextype) {
-		this.indextype = indextype;
-
+	public void setIndexType(final String indexType) {
+		this.indexType = indexType;
 	}
 
 }
