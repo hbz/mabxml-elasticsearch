@@ -1,12 +1,12 @@
 h1. About
 
-Transform MAB-XML to JSON for Elasticsearch indexing with "Metafacture":https://github.com/culturegraph/metafacture-core/wiki.
+Transform MAB-XML to JSON and index into Elasticsearch using "Metafacture":https://github.com/culturegraph/metafacture-core/wiki.
 
 h1. Build
 
 "!https://secure.travis-ci.org/hbz/mabxml-elasticsearch.png?branch=master!":https://travis-ci.org/hbz/mabxml-elasticsearch
 
-Prerequisites: Java 8, Maven 3; verify with @mvn -version@
+Prerequisites: Maven 3 with Java 8 and UTF-8 encoding; verify with @mvn -version@
 
 Create and change into a folder where you want to store the projects:
 
@@ -27,34 +27,47 @@ Build mabxml-elasticsearch:
 
 See the @.travis.yml@ file for details on the CI config used by Travis.
 
-h1. Data
+h2. Usage
 
-Download the sample input data:
+Run the Transform.java class and pass arguments using your IDE or Maven:
 
-* @cd src/main/resources/input/@
-* @wget http://test.lobid.org/assets/data/20140817_20140818.tar.bz2@
+@mvn exec:java -Dexec.mainClass="flow.Transform" -Dexec.args=""@
 
-Go to the project root and run the transformation:
+Pass a directory with the data to transform and the file suffix:
 
-* @cd ../../../../ ; mvn exec:java -Dexec.mainClass="flow.Transform" -Dexec.args="src/main/resources/input/ bz2 lobid-hbz 193.30.112.170"@
+@src/main/resources/input/ bz2@
 
-This will index the data in an hbz-internal Elasticsearch instance (only works hbz internally).
+Also pass your Elasticsearch cluster name, node IP number, and index name:
+
+@es-cluster 127.0.0.1 es-index@
+
+To try this, first get some sample data and return to the root directory:
+
+@cd src/main/resources/input/ ; wget http://test.lobid.org/assets/data/20140817_20140818.tar.bz2 ; cd -@
+
+Then run the configured Transformation using Maven:
+
+@mvn exec:java -Dexec.mainClass="flow.Transform" -Dexec.args="src/main/resources/input/ bz2 lobid-hbz 193.30.112.170 hbz01"@
+
+This will index the data from the specified location to the cluster 'lobid-hbz', using node '193.30.112.170', into an index called 'hbz01' (the command above and the Elasticsearch requests below only work hbz internally).
 
 You can then GET a specific record by hbz ID:
 
-* @curl -XGET 'http://quaoar1.hbz-nrw.de:9200/hbz01/mabxml/HT012786619'; echo@
+* @curl -XGET 'http://193.30.112.170:9200/hbz01/mabxml/HT012786619'; echo@
 
 You can also exclude the Elasticsearch metadata:
 
-* @curl -XGET 'http://quaoar1.hbz-nrw.de:9200/hbz01/mabxml/HT012786619/_source'; echo@
+* @curl -XGET 'http://193.30.112.170:9200/hbz01/mabxml/HT012786619/_source'; echo@
 
 For details on the various options see the "GET API documentation":http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-get.html.
+
+h1. Deployment
+
+We run this transformation daily using a cron job. Internal documentation: to fully understand _what_ is done _when_, trace the entries in crontab of _hduser@weywot1_.
+
+The final index data is served using a small web application (see 'web/' folder in this repo) at "http://lobid.org/hbz01":http://lobid.org/hbz01, with individual resource URLs like "http://lobid.org/hbz01/HT012786619":http://lobid.org/hbz01/HT012786619. Internal documentation: the application is deployed at _sol@quaoar1:~/git/mabxml-elasticsearch_.
 
 h1. License
 
 Eclipse Public License: "http://www.eclipse.org/legal/epl-v10.html":http://www.eclipse.org/legal/epl-v10.html
-
-h1. Internal information
-
-Startscripts are triggered in crontab of _hduser@weywot1_. Trace these entries to fully understand *what* and *when* something is done.
 
