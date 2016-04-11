@@ -6,7 +6,7 @@ h1. Build
 
 "!https://secure.travis-ci.org/hbz/mabxml-elasticsearch.png?branch=master!":https://travis-ci.org/hbz/mabxml-elasticsearch
 
-Prerequisites: Java 8, Maven 3; verify with @mvn -version@
+Prerequisites: Maven 3 with Java 8 and UTF-8 encoding; verify with @mvn -version@
 
 Create and change into a folder where you want to store the projects:
 
@@ -36,25 +36,25 @@ Download the sample input data:
 
 Go to the project root and run the transformation:
 
-* @cd ../../../../ ; mvn exec:java -Dexec.mainClass="flow.Transform" -Dexec.args="src/main/resources/input/ bz2 lobid-hbz 193.30.112.170"@
+* @cd ../../../../ ; mvn exec:java -Dexec.mainClass="flow.Transform" -Dexec.args="src/main/resources/input/ bz2 lobid-hbz 193.30.112.170 hbz01"@
 
-This will index the data in an hbz-internal Elasticsearch instance (only works hbz internally).
+This will index the data from the specified directory to the cluster called 'lobid-hbz' via node '193.30.112.170' into an index called 'hbz01' (command above only works hbz internally).
 
-You can then GET a specific record by hbz ID:
+You can then GET a specific record by hbz ID (the 'hbz01' part in those URLs are the index name from the transformation command above):
 
-* @curl -XGET 'http://quaoar1.hbz-nrw.de:9200/hbz01/mabxml/HT012786619'; echo@
+* @curl -XGET 'http://193.30.112.170:9200/hbz01/mabxml/HT012786619'; echo@
 
 You can also exclude the Elasticsearch metadata:
 
-* @curl -XGET 'http://quaoar1.hbz-nrw.de:9200/hbz01/mabxml/HT012786619/_source'; echo@
+* @curl -XGET 'http://193.30.112.170:9200/hbz01/mabxml/HT012786619/_source'; echo@
 
 For details on the various options see the "GET API documentation":http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-get.html.
+
+h1. Deployment
+
+We run this transformation daily using a cron job. Internal documentation: To fully understand _what_ and _when_ it's done, trace the entries in crontab of _hduser@weywot1_.
 
 h1. License
 
 Eclipse Public License: "http://www.eclipse.org/legal/epl-v10.html":http://www.eclipse.org/legal/epl-v10.html
-
-h1. Internal information
-
-Startscripts are triggered in crontab of _hduser@weywot1_. Trace these entries to fully understand *what* and *when* something is done.
 
