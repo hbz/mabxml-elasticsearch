@@ -1,6 +1,6 @@
 h1. About
 
-Index MAB-XML into "Elasticsearch":https://www.elastic.co/products/elasticsearch using "Metafacture":https://github.com/culturegraph/metafacture-core/wiki an serve it with "Playframework":https://www.playframework.com/.
+Index MAB-XML into "Elasticsearch":https://www.elastic.co/products/elasticsearch using "Metafacture":https://github.com/culturegraph/metafacture-documentation an serve it with "Playframework":https://www.playframework.com/.
 
 h1. Build
 
