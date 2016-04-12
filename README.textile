@@ -63,7 +63,7 @@ For details on the various options see the "GET API documentation":http://www.el
 
 h1. Deployment
 
-We run this transformation daily using a cron job. Internal documentation: to fully understand _what_ is done _when_, trace the entries in crontab of _hduser@weywot1_.
+We run this transformation daily using a cron job that calls the @src/main/resources/transform.sh@ script. Internal documentation: to fully understand _what_ is done _when_, trace the entries in crontab of _hduser@weywot1_.
 
 The final index data is served using a small web application (see 'web/' folder in this repo) at "http://lobid.org/hbz01":http://lobid.org/hbz01, with individual resource URLs like "http://lobid.org/hbz01/HT012786619":http://lobid.org/hbz01/HT012786619. Internal documentation: the application is deployed at _sol@quaoar1:~/git/mabxml-elasticsearch_.
 
