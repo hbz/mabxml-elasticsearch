@@ -15,3 +15,5 @@ web/.classpath
 web/.project
 web/.settings
 *~
+/elasticsearch*
+/web/*activator*
