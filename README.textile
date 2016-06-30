@@ -31,13 +31,13 @@ h2. Index server
 
 See also: "Elasticsearch installation steps":https://www.elastic.co/downloads/elasticsearch.
 
-Download the latest 1.3.x Elasticsearch release, e.g. on Linux:
+Download the latest 2.3.x Elasticsearch release, e.g. on Linux:
 
-@wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.3.9.zip@
+@wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.3.3.zip@
 
 Unzip it and change into the new directory:
 
-@unzip elasticsearch-1.3.9.zip ; cd elasticsearch-1.3.9@
+@unzip elasticsearch-2.3.3.zip ; cd elasticsearch-2.3.3@
 
 Run the @elasticsearch@ application in the @bin/@ folder in daemon mode (output is logged to @logs/elasticsearch.log@), and record the process id:
 

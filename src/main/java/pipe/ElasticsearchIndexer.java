@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -16,14 +17,14 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.collect.ImmutableMap;
 import org.elasticsearch.common.io.Streams;
-import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Index JSON into elasticsearch.
@@ -103,19 +104,19 @@ public class ElasticsearchIndexer
 		if (pendingIndexRequests > 0) {
 			executeBulk();
 		}
-		setIndexRefreshInterval(client, "1");
+		setIndexRefreshInterval(client, "1s");
 		client.close();
 	}
 
 	@Override
 	public void onSetReceiver() {
-		ImmutableSettings.Builder clientSettings =
-				ImmutableSettings.settingsBuilder().put("cluster.name", clusterName);
-		InetSocketTransportAddress node =
-				new InetSocketTransportAddress(hostName, 9300);
-		tc = new TransportClient(clientSettings.put("client.transport.sniff", false)
-				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build());
-		client = tc.addTransportAddress(node);
+		Settings.Builder clientSettings = Settings.settingsBuilder()//
+				.put("cluster.name", clusterName)//
+				.put("client.transport.sniff", false)//
+				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS);
+		tc = TransportClient.builder().settings(clientSettings).build();
+		client = tc.addTransportAddress(
+				new InetSocketTransportAddress(new InetSocketAddress(hostName, 9300)));
 		final IndicesAdminClient admin = client.admin().indices();
 		if (!admin.prepareExists(indexName).execute().actionGet().isExists()) {
 			admin.prepareCreate(indexName).setSource(config()).execute().actionGet();

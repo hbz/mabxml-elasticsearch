@@ -26,8 +26,8 @@ public final class Transform {
 
 	private static final String DIR = "/files/open_data/open/DE-605/mabxml/";
 	private static final String SUFFIX = "gz";
-	private static final String CLUSTER = "quaoar";
-	private static final String HOSTNAME = "193.30.112.171";
+	private static final String CLUSTER = "quaoar1";
+	private static final String HOSTNAME = "193.30.112.170";
 	private static final String INDEX = "hbz01-test";
 
 	@SuppressWarnings("javadoc")
