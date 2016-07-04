@@ -14,8 +14,8 @@ updateFile=$(curl $updates | grep 'tar.gz' | cut -d '"' -f2 | grep $date)
 cd updates ; wget $updates$updateFile ; cd ../../../..
 
 # Run the transformation with the latest file (and possibly unprocessed previous files):
-mvn clean install > log/processMabxml.sh.$date.log 2>&1
-mvn exec:java -Dexec.mainClass="flow.Transform" -Dexec.args="src/main/resources/updates/ gz quaoar 193.30.112.171 hbz01-mabxml" > log/processMabxml.sh.$date.log 2>&1
+mvn clean install >> log/processMabxml.sh.$date.log 2>&1
+mvn exec:java -Dexec.mainClass="flow.Transform" -Dexec.args="src/main/resources/updates/ gz quaoar 193.30.112.171 hbz01-mabxml" >> log/processMabxml.sh.$date.log 2>&1
 
 # Clean up and move updates to the full data directory (skipped if transformation fails, due to -e option):
 cd src/main/resources/
