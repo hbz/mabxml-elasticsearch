@@ -4,6 +4,7 @@
 
 # Home page
 GET     /hbz01                           controllers.MabxmlApplication.index()
+POST    /hbz01/transform                 controllers.MabxmlApplication.transform(dir, suffix, cluster, hostname, index)
 GET     /hbz01/:id                       controllers.MabxmlApplication.get(id)
  
 # Map static resources from the /public folder to the /assets URL path

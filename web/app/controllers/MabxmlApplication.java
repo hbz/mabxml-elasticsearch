@@ -5,6 +5,7 @@ import java.io.File;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import data.Transform;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.ws.WS;
@@ -54,5 +55,18 @@ public class MabxmlApplication extends Controller {
 						.as("text/xml; charset: utf-8")
 				: status(response.getStatus(), String.format("GET %s: %s\n%s", id,
 						response.getStatusText(), response.getBody()));
+	}
+
+	public static Result transform(String dir, String suffix, String cluster,
+			String hostname, String index) {
+		try {
+			Transform.main(new String[] { dir, suffix, cluster, hostname, index });
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return internalServerError(t.getMessage());
+		}
+		return ok(String.format(
+				"Transformed: dir=%s, suffix=%s, cluster=%s, hostname=%s, index=%s",
+				dir, suffix, cluster, hostname, index));
 	}
 }

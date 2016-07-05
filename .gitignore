@@ -1,6 +1,7 @@
 target/
 .DS_Store
 *.tar.bz2
+!web/test/*.tar.bz2
 *.tar.gz
 *.out.*
 logs
