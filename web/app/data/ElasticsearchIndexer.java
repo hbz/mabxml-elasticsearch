@@ -62,8 +62,7 @@ public class ElasticsearchIndexer
 	private static String config() {
 		String res = null;
 		try {
-			final InputStream config =
-					new FileInputStream("conf/index-config.json");
+			final InputStream config = new FileInputStream("conf/index-config.json");
 			try (InputStreamReader reader = new InputStreamReader(config, "UTF-8")) {
 				res = Streams.copyToString(reader);
 			}
@@ -135,7 +134,6 @@ public class ElasticsearchIndexer
 			return;
 		}
 		try {
-			@SuppressWarnings("unchecked")
 			final Map<String, Object> json = mapper.readValue(obj, Map.class);
 			final String id = (String) json.get(idKey);
 			index(json, id);

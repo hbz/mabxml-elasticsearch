@@ -14,7 +14,7 @@ dist
 web/out
 web/.classpath
 web/.project
-web/.settings
+web/.settings/org.scala-ide*
 *~
 /elasticsearch*
 /web/*activator*

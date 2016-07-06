@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import play.twirl.api.Content;
 
-
+@SuppressWarnings("javadoc")
 public class MabxmlApplicationTest {
 
 	@Test

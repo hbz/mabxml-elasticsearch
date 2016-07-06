@@ -17,16 +17,15 @@ import org.junit.Test;
 import play.libs.F.Callback;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
-import play.mvc.Result;
 import play.mvc.Http.Status;
-import play.test.Helpers;
+import play.mvc.Result;
 import play.test.TestBrowser;
 
+@SuppressWarnings("javadoc")
 public class IntegrationTest {
 
 	private static final String INDEX = "hbz01";
 	private static final String TEST_RESOURCE = "HT017665866";
-	
 
 	@Test
 	public void testMainPage() {
@@ -36,7 +35,8 @@ public class IntegrationTest {
 					public void invoke(TestBrowser browser) {
 						browser.goTo("http://localhost:3333/hbz01");
 						assertThat(browser.pageSource()).contains(INDEX + "/public");
-						assertThat(browser.pageSource()).contains(INDEX + "/" + TEST_RESOURCE);
+						assertThat(browser.pageSource())
+								.contains(INDEX + "/" + TEST_RESOURCE);
 					}
 				});
 	}
@@ -44,7 +44,8 @@ public class IntegrationTest {
 	@Test
 	public void getById() {
 		running(fakeApplication(), () -> {
-			Result result = route(fakeRequest(GET, "/" + INDEX + "/" + TEST_RESOURCE));
+			Result result =
+					route(fakeRequest(GET, "/" + INDEX + "/" + TEST_RESOURCE));
 			assertThat(result).isNotNull();
 			assertThat(contentType(result)).isEqualTo("text/xml");
 			assertThat(contentAsString(result)).contains("Sozialwissenschaften");
