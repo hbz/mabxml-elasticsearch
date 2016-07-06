@@ -13,9 +13,7 @@ import pipe.ElasticsearchIndexer;
 import pipe.IdExtractor;
 
 /**
- * Gets tar bz2 archives of MAB XML clobs and index their records into an
- * Elasticsearch instance. Acts as online test and can also be executed on
- * command line.
+ * Index MAB XML clobs into an Elasticsearch instance.
  *
  * @author Fabian Steeg (fsteeg)
  * @author Pascal Christoph (dr0i)
@@ -28,24 +26,30 @@ public final class Transform {
 
 	private static final String DIR = "/files/open_data/open/DE-605/mabxml/";
 	private static final String SUFFIX = "gz";
-	private static final String CLUSTER = "quaoar";
-	private static final String HOSTNAME = "193.30.112.171";
+	private static final String CLUSTER = "quaoar1";
+	private static final String HOSTNAME = "193.30.112.170";
+	private static final String INDEX = "hbz01-test";
 
 	@SuppressWarnings("javadoc")
 	public static void main(String... args) {
-		// hbz catalog transformation
+		String dir = args.length > 0 ? args[0] : DIR;
+		String suffix = args.length > 1 ? args[1] : SUFFIX;
+		String cluster = args.length > 2 ? args[2] : CLUSTER;
+		String hostname = args.length > 3 ? args[3] : HOSTNAME;
+		String index = args.length > 4 ? args[4] : INDEX;
 		FileOpener openFile = new FileOpener();
 		DirReader dirReader = new DirReader();
-		dirReader.setFilenamePattern(
-				args.length == 4 ? ".*tar." + args[1] : ".*tar." + SUFFIX);
+		dirReader.setFilenamePattern(".*tar." + suffix);
 		ElasticsearchIndexer elasticsearchIndexer =
-				getElasticsearchIndexer(args.length == 4 ? args[2] : CLUSTER,
-						args.length == 4 ? args[3] : HOSTNAME);
-		dirReader.setReceiver(new ObjectLogger<String>("Directory reader: "))
-				.setReceiver(openFile).setReceiver(new TarReader())
-				.setReceiver(getIdExtractor()).setReceiver(new JsonEncoder())
+				getElasticsearchIndexer(cluster, hostname, index);
+		dirReader//
+				.setReceiver(new ObjectLogger<String>("Directory reader: "))//
+				.setReceiver(openFile)//
+				.setReceiver(new TarReader())//
+				.setReceiver(getIdExtractor())//
+				.setReceiver(new JsonEncoder())//
 				.setReceiver(elasticsearchIndexer);
-		dirReader.process(args.length == 4 ? args[0] : DIR);
+		dirReader.process(dir);
 		elasticsearchIndexer.closeStream();
 		dirReader.closeStream();
 	}
@@ -59,13 +63,13 @@ public final class Transform {
 	}
 
 	private static ElasticsearchIndexer getElasticsearchIndexer(
-			final String cluster, final String hostname) {
+			final String cluster, final String hostName, final String index) {
 		ElasticsearchIndexer esIndexer = new ElasticsearchIndexer();
-		esIndexer.setClustername(cluster);
-		esIndexer.setHostname(hostname);
-		esIndexer.setIndexname("hbz01");
+		esIndexer.setClusterName(cluster);
+		esIndexer.setHostName(hostName);
+		esIndexer.setIndexName(index);
 		esIndexer.setIdKey("hbzId");
-		esIndexer.setIndextype("mabxml");
+		esIndexer.setIndexType("mabxml");
 		esIndexer.onSetReceiver();
 		return esIndexer;
 	}
