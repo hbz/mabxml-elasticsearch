@@ -10,8 +10,4 @@ before_install:
   - wget http://downloads.typesafe.com/typesafe-activator/${ACTIVATOR_VERSION}/typesafe-activator-${ACTIVATOR_VERSION}-minimal.zip
   - unzip typesafe-activator-${ACTIVATOR_VERSION}-minimal.zip
 script:
-  - mvn test
-  - cd web
-  - ../activator-${ACTIVATOR_VERSION}-minimal/bin/activator "test-only MabxmlApplicationTest"
-install:
-  - mvn clean install -e -q
+  - activator-${ACTIVATOR_VERSION}-minimal/bin/activator "test-only MabxmlApplicationTest"

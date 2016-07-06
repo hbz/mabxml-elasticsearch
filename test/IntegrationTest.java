@@ -58,9 +58,9 @@ public class IntegrationTest {
 			WSResponse response = WS.url("http://localhost:3333/hbz01/transform")//
 					.setQueryParameter("dir", "test/20140817_20140818.tar.bz2")//
 					.setQueryParameter("suffix", "bz2")//
-					.setQueryParameter("cluster", "quaoar1")//
-					.setQueryParameter("hostname", "193.30.112.170")//
-					.setQueryParameter("index", "hbz01-dev")//
+					.setQueryParameter("cluster", "elasticsearch")//
+					.setQueryParameter("hostname", "127.0.0.1")//
+					.setQueryParameter("index", "hbz01")//
 					.post("").get(10, TimeUnit.SECONDS);
 			System.out.println(response.getBody());
 			assertThat(response.getStatus()).isEqualTo(Status.OK);

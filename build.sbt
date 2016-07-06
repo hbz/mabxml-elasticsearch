@@ -1,4 +1,4 @@
-name := """mabxml-elasticsearch-web"""
+name := """mabxml-elasticsearch"""
 
 version := "1.0-SNAPSHOT"
 
