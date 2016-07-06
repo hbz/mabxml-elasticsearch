@@ -10,10 +10,16 @@ import static play.test.Helpers.route;
 import static play.test.Helpers.running;
 import static play.test.Helpers.testServer;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 
 import play.libs.F.Callback;
+import play.libs.ws.WS;
+import play.libs.ws.WSResponse;
 import play.mvc.Result;
+import play.mvc.Http.Status;
+import play.test.Helpers;
 import play.test.TestBrowser;
 
 public class IntegrationTest {
@@ -42,6 +48,21 @@ public class IntegrationTest {
 			assertThat(result).isNotNull();
 			assertThat(contentType(result)).isEqualTo("text/xml");
 			assertThat(contentAsString(result)).contains("Sozialwissenschaften");
+		});
+	}
+
+	@Test
+	public void testTransformation() {
+		running(testServer(3333), () -> {
+			WSResponse response = WS.url("http://localhost:3333/hbz01/transform")//
+					.setQueryParameter("dir", "test/20140817_20140818.tar.bz2")//
+					.setQueryParameter("suffix", "bz2")//
+					.setQueryParameter("cluster", "quaoar1")//
+					.setQueryParameter("hostname", "193.30.112.170")//
+					.setQueryParameter("index", "hbz01-dev")//
+					.post("").get(10, TimeUnit.SECONDS);
+			System.out.println(response.getBody());
+			assertThat(response.getStatus()).isEqualTo(Status.OK);
 		});
 	}
 }
