@@ -67,10 +67,15 @@ public class MabxmlApplication extends Controller {
 	 * @param cluster The Elasticsearch cluster naem to index into
 	 * @param hostname The Elasticsearch hostname for indexing
 	 * @param index The Elasticsearch index name
-	 * @return 200 ok if transformation worked, or 500 internal server error
+	 * @return 200 ok if transformation worked, 403 forbidden if remote host is
+	 *         not authorized to transform data, or 500 internal server error
 	 */
 	public static Result transform(String dir, String suffix, String cluster,
 			String hostname, String index) {
+		if (!CONFIG.getStringList("transform.remote")
+				.contains(request().remoteAddress())) {
+			return forbidden();
+		}
 		try {
 			Transform.main(new String[] { dir, suffix, cluster, hostname, index });
 		} catch (Throwable t) {
