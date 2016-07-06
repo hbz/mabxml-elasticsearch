@@ -1,0 +1,124 @@
+h1. About
+
+Index MAB-XML into "Elasticsearch":https://www.elastic.co/products/elasticsearch using "Metafacture":https://github.com/culturegraph/metafacture-documentation an serve it with "Playframework":https://www.playframework.com/.
+
+h1. Setup
+
+"!https://secure.travis-ci.org/hbz/mabxml-elasticsearch.png?branch=master!":https://travis-ci.org/hbz/mabxml-elasticsearch
+
+Prerequisites: Maven 3 with Java 8 and UTF-8 encoding; verify with @mvn -version@
+
+Create and change into a folder where you want to store the projects:
+
+* @mkdir ~/git ; cd ~/git@
+
+Build the hbz metafacture-core fork:
+
+* @git clone https://github.com/hbz/metafacture-core.git@
+* @cd metafacture-core@
+* @mvn clean install -DskipTests@
+* @cd ..@
+
+Get and change into the mabxml-elasticsearch repo:
+
+* @git clone https://github.com/hbz/mabxml-elasticsearch.git@
+* @cd mabxml-elasticsearch@
+
+See the @.travis.yml@ file for details on the CI config used by Travis.
+
+h2. Index server setup
+
+See also: "Elasticsearch installation steps":https://www.elastic.co/downloads/elasticsearch.
+
+Download the latest 2.3.x Elasticsearch release, e.g. on Linux:
+
+@wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.3.3.zip@
+
+Unzip it and change into the new directory:
+
+@unzip elasticsearch-2.3.3.zip ; cd elasticsearch-2.3.3@
+
+Run the @elasticsearch@ application in the @bin/@ folder in daemon mode (output is logged to @logs/elasticsearch.log@), and record the process id:
+
+@bin/elasticsearch -d -p pid@
+
+Access your local Elasticsearch server:
+
+@curl -X GET http://localhost:9200/@
+
+To shut down the Elasticsearch server, kill the process recorded in the @pid@ file on startup:
+
+@kill `cat pid`@
+
+To continue with the setup and usage below, leave the server running or restart it, and change back to the project root directory:
+
+@cd ../web@
+
+h2. Web server setup
+
+Download the minimal activator application (optionally, there's an offline version available, see "Playframework downloads":https://www.playframework.com/download documentation) to run the Play server:
+
+@wget https://downloads.typesafe.com/typesafe-activator/1.3.9/typesafe-activator-1.3.9-minimal.zip@
+
+Unzip it:
+
+@unzip typesafe-activator-1.3.9-minimal.zip@
+
+Start the Play server from the @web/@ project root in background production mode (output is logged to console and @logs/application.log@, for development mode replace @start@ with @run@):
+
+@activator-1.3.9-minimal/bin/activator start@
+
+The web applications index page can now be accessed at "http://localhost:9000/hbz01":http://localhost:9000/hbz01.
+
+Press @Ctrl+D@ to return to the shell (since we called @start@, the server remains in background).
+
+h2. Transformation
+
+To transform and index the data, POST to the @transform/@ route and pass arguments as query parameters.
+
+Pass a directory with the data to transform (full local path, change sample below for your system), the file suffix, your Elasticsearch cluster name, node IP number, and index name, e.g.:
+
+@curl -XPOST "http://localhost:9000/hbz01/transform?dir=/home/fsteeg/git/mabxml-elasticsearch/web/test/&suffix=bz2&cluster=elasticsearch&hostname=127.0.0.1&index=hbz01"@
+
+This will index the data from the specified location to the cluster 'elasticsearch', using node '127.0.0.1', into an index called 'hbz01'.
+
+h1. Access
+
+h2. Index server data access
+
+You can then GET a specific record in the index by hbz ID:
+
+@curl -XGET 'http://127.0.0.1:9200/hbz01/mabxml/HT012786619'; echo@
+
+You can also exclude the Elasticsearch metadata:
+
+@curl -XGET 'http://127.0.0.1:9200/hbz01/mabxml/HT012786619/_source'; echo@
+
+For details on the various options see the "GET API documentation":http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-get.html.
+
+h2. Web server data access
+
+You can also GET data by ID using the Play server:
+
+@curl http://localhost:9000/hbz01/HT017665866@
+
+Unlike the Elasticsearch index queries above (which serve JSON), this serves XML:
+
+@curl http://localhost:9000/hbz01/HT017665866 | xmllint --format -@
+
+To shut down the server, kill the process recorded in the @RUNNING_PID@ file:
+
+@kill `cat target/universal/stage/RUNNING_PID`@
+
+When running in foreground development mode (@activator run@), hitting @CTRL+D@ stops the server.
+
+h1. Deployment
+
+We run this transformation daily using a cron job that calls the @transform.sh@ script. Internal documentation: to fully understand _what_ is done _when_, trace the entries in crontab of _hduser@weywot1_.
+
+The final index data is served at "http://lobid.org/hbz01":http://lobid.org/hbz01, with individual resource URLs like "http://lobid.org/hbz01/HT012786619":http://lobid.org/hbz01/HT012786619. Internal documentation: the application is deployed at _sol@quaoar1:~/git/mabxml-elasticsearch_, an Apache proxy is set up at _emphytos:/etc/apache2/vhosts.d/lobid.org.conf_.
+
+h1. License
+
+Eclipse Public License: "http://www.eclipse.org/legal/epl-v10.html":http://www.eclipse.org/legal/epl-v10.html
+

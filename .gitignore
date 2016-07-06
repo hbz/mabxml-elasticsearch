@@ -16,5 +16,5 @@ web/.classpath
 web/.project
 web/.settings/org.scala-ide*
 *~
-/elasticsearch*
+elasticsearch*
 /web/*activator*
