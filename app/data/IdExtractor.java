@@ -1,6 +1,6 @@
 /* Copyright 2014 hbz, Fabian Steeg. Licensed under the Eclipse Public License 1.0 */
 
-package pipe;
+package data;
 
 import java.io.IOException;
 import java.io.Reader;

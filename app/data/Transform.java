@@ -1,16 +1,13 @@
 /* Copyright 2014  hbz, Pascal Christoph.
  * Licensed under the Eclipse Public License 1.0 */
 
-package flow;
+package data;
 
 import org.culturegraph.mf.stream.converter.JsonEncoder;
 import org.culturegraph.mf.stream.pipe.ObjectLogger;
 import org.culturegraph.mf.stream.source.DirReader;
 import org.culturegraph.mf.stream.source.FileOpener;
 import org.culturegraph.mf.stream.source.TarReader;
-
-import pipe.ElasticsearchIndexer;
-import pipe.IdExtractor;
 
 /**
  * Index MAB XML clobs into an Elasticsearch instance.

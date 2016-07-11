@@ -1,6 +1,7 @@
 target/
 .DS_Store
 *.tar.bz2
+!test/*.tar.bz2
 *.tar.gz
 *.out.*
 logs
@@ -10,10 +11,10 @@ target
 tmp
 .history
 dist
-web/out
-web/.classpath
-web/.project
-web/.settings
+out
+.classpath
+.project
+.settings/org.scala-ide*
 *~
-/elasticsearch*
-/web/*activator*
+elasticsearch*
+*activator*

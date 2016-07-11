@@ -1,4 +1,4 @@
-package pipe;
+package data;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -62,8 +62,7 @@ public class ElasticsearchIndexer
 	private static String config() {
 		String res = null;
 		try {
-			final InputStream config =
-					new FileInputStream("src/main/resources/index-config.json");
+			final InputStream config = new FileInputStream("conf/index-config.json");
 			try (InputStreamReader reader = new InputStreamReader(config, "UTF-8")) {
 				res = Streams.copyToString(reader);
 			}
