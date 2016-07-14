@@ -2,8 +2,8 @@
 set -euo pipefail # See http://redsymbol.net/articles/unofficial-bash-strict-mode/
 IFS=$'\n\t'
 
-# Execute via crontab by sol@quaoar1:
-# 00 9 * * * cd /home/sol/git/mabxml-elasticsearch ; bash cron.sh >> logs/cron.sh.log 2>&1
+# Execute via crontab by hduser@weywot1:
+# 30 6 * * * ssh sol@quaoar1 "cd /home/sol/git/mabxml-elasticsearch ; bash -x cron.sh >> logs/cron.sh.log 2>&1"
 
 # Determine the latest update file and store it locally:
 updates=http://dataproxy.lobid.org/alephxml/export/update/
