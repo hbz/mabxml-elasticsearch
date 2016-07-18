@@ -6,6 +6,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import data.Transform;
+import play.Logger;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.ws.WS;
@@ -79,7 +80,7 @@ public class MabxmlApplication extends Controller {
 		try {
 			Transform.main(new String[] { dir, suffix, cluster, hostname, index });
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Logger.debug("Transformation failed", t);
 			return internalServerError(t.getMessage());
 		}
 		return ok(String.format(
