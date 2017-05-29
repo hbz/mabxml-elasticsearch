@@ -15,6 +15,7 @@ DOWNLOAD_FILE="DE-605-aleph-update-marcxchange-$DATE_YESTERDAY-$DATE.tar.gz"
 # Use "brace extension" as we don't know the appendix of the basedump
 if [ $1 == "basedump" ]; then
 	DOWNLOAD_FILE="DE-605-aleph-baseline-marcxchange-$DATE{00..24}.tar.gz"
+ 	TARGET_PATH=weekly	
 fi
 
 cd $TARGET_PATH 
