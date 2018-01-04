@@ -20,6 +20,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,11 +110,12 @@ public class ElasticsearchIndexer
 
 	@Override
 	public void onSetReceiver() {
-		Settings.Builder clientSettings = Settings.settingsBuilder()//
+		Settings clientSettings = Settings.builder()//
 				.put("cluster.name", clusterName)//
 				.put("client.transport.sniff", false)//
-				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS);
-		tc = TransportClient.builder().settings(clientSettings).build();
+				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build();
+		// tc = TransportClient.builder().settings(clientSettings).build();
+		tc = new PreBuiltTransportClient(clientSettings);
 		client = tc.addTransportAddress(
 				new InetSocketTransportAddress(new InetSocketAddress(hostName, 9300)));
 		final IndicesAdminClient admin = client.admin().indices();

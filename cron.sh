@@ -23,7 +23,7 @@ eval wget -nv http://lobid.org/download/dumps/DE-605/mabxml/$DOWNLOAD_FILE || tr
 
 cd ..
 # Run the transformation with the latest file (and possibly unprocessed previous files):
-curl --fail -XPOST "http://localhost:7300/hbz01/transform?dir=/home/sol/git/mabxml-elasticsearch/$TARGET_PATH/&suffix=gz&cluster=gaia-aither&hostname=193.30.112.82&index=hbz01" >> logs/processMabxml.sh.$DATE-gaia.log 2>&1
+curl --fail -XPOST "http://localhost:7300/hbz01/transform?dir=/home/sol/git/mabxml-elasticsearch/$TARGET_PATH/&suffix=gz&cluster=weywot&hostname=10.9.0.13&index=hbz01" >> logs/processMabxml.sh.$DATE-weywot.log 2>&1
 
 # Clean up
 rm $TARGET_PATH/*.tar.gz

@@ -4,12 +4,13 @@
 			"date_detection" : false,
 			"properties" : {
 				"hbzId" : {
-					"type" : "string",
+					"type" : "text",
 					"index" : "not_analyzed"
 				},
 				"mabXml" : {
-					"type" : "string",
-					"index" : "no"
+					"type" : "text",
+					"index" : "false",
+					"doc_values": false
 				}
 			}
 		}
