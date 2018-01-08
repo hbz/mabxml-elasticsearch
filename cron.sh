@@ -6,24 +6,20 @@ IFS=$'\n\t'
 # 30 5 * * * ssh sol@quaoar1 "cd /home/sol/git/mabxml-elasticsearch ; bash -x cron.sh update >> logs/cron.sh.log 2>&1"
 # 23 23 * * Sat ssh sol@quaoar1 "cd /home/sol/git/mabxml-elasticsearch ; bash -x cron.sh basedump >> logs/cron.sh.log 2>&1"
 
-TARGET_PATH=daily
+TARGET_PATH=/data/DE-605/mabxml
 # Determine the latest update file and store it locally:
 DATE=$(date "+%Y%m%d")
 DATE_YESTERDAY=$(date --date yesterday "+%Y%m%d")
 
-DOWNLOAD_FILE="DE-605-aleph-update-marcxchange-$DATE_YESTERDAY-$DATE.tar.gz"
 # Use "brace extension" as we don't know the appendix of the basedump
 if [ $1 == "basedump" ]; then
-	DOWNLOAD_FILE="DE-605-aleph-baseline-marcxchange-$DATE{00..24}.tar.gz"
- 	TARGET_PATH=weekly	
+       TARGET_PATH=$TARGET_PATH/baseline
+else 
+       TARGET_PATH=$TARGET_PATH/updates
 fi
 
-cd $TARGET_PATH 
-eval wget -nv http://lobid.org/download/dumps/DE-605/mabxml/$DOWNLOAD_FILE || true
-
-cd ..
 # Run the transformation with the latest file (and possibly unprocessed previous files):
-curl --fail -XPOST "http://localhost:7300/hbz01/transform?dir=/home/sol/git/mabxml-elasticsearch/$TARGET_PATH/&suffix=gz&cluster=weywot&hostname=10.9.0.13&index=hbz01" >> logs/processMabxml.sh.$DATE-weywot.log 2>&1
+curl --fail -XPOST "http://localhost:7300/hbz01/transform?dir=$TARGET_PATH&suffix=gz&cluster=weywot&hostname=10.9.0.13&index=hbz01" >> logs/processMabxml.sh.$DATE-weywot.log 2>&1
 
 # Clean up
-rm $TARGET_PATH/*.tar.gz
+rm $TARGET_PATH/*.gz
