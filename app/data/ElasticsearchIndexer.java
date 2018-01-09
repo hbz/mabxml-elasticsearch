@@ -114,7 +114,6 @@ public class ElasticsearchIndexer
 				.put("cluster.name", clusterName)//
 				.put("client.transport.sniff", false)//
 				.put("client.transport.ping_timeout", 20, TimeUnit.SECONDS).build();
-		// tc = TransportClient.builder().settings(clientSettings).build();
 		tc = new PreBuiltTransportClient(clientSettings);
 		client = tc.addTransportAddress(
 				new InetSocketTransportAddress(new InetSocketAddress(hostName, 9300)));
