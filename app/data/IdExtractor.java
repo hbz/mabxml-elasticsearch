@@ -67,6 +67,8 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 					getReceiver().literal(IdExtractor.idFieldName, id);
 					getReceiver().literal(IdExtractor.fullXmlFieldName, line);
 					getReceiver().endRecord();
+				} else {
+					IdExtractor.LOG.error("No ID found in " + line);
 				}
 			}
 		}

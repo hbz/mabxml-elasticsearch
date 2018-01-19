@@ -75,6 +75,11 @@ public class ElasticsearchIndexer
 
 	private void index(final Map<String, Object> json, final String id) {
 		if (id.isEmpty()) {
+			StringBuilder message = new StringBuilder();
+			json.forEach((k, v) -> {
+				message.append("Item : " + k + " Count : " + v);
+			});
+			LOG.warn("id is empty for: " + message);
 			return;
 		}
 		bulkRequest
