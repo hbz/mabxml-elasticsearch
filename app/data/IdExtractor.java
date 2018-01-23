@@ -18,11 +18,11 @@ import org.culturegraph.mf.framework.DefaultObjectPipe;
 import org.culturegraph.mf.framework.StreamReceiver;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import play.Logger;
 
 /**
  * Extracts ID from given XML, emit ID and full XML as literals.
@@ -42,13 +42,12 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 			return IdExtractor.expression.evaluate(doc);
 		} catch (XPathExpressionException | ParserConfigurationException
 				| SAXException | IOException e) {
-			IdExtractor.LOG.warn("Could not parse: " + line);
+			Logger.warn("Could not parse: " + line);
 			e.printStackTrace();
 		}
 		return null;
 	}
 
-	private static final Logger LOG = LoggerFactory.getLogger(IdExtractor.class);
 	private static XPathExpression expression;
 	private static DocumentBuilderFactory factory =
 			DocumentBuilderFactory.newInstance();
@@ -68,7 +67,7 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 					getReceiver().literal(IdExtractor.fullXmlFieldName, line);
 					getReceiver().endRecord();
 				} else {
-					IdExtractor.LOG.error("No ID found in " + line);
+					Logger.warn("No ID found in " + line);
 				}
 			}
 		}

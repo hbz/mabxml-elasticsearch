@@ -21,11 +21,11 @@ import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+
+import play.Logger;
 
 /**
  * Index JSON into elasticsearch.
@@ -38,8 +38,6 @@ import com.google.common.collect.ImmutableMap;
 public class ElasticsearchIndexer
 		extends DefaultObjectPipe<String, ObjectReceiver<Void>> {
 
-	private static final Logger LOG =
-			LoggerFactory.getLogger(ElasticsearchIndexer.class);
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	private String hostName;
@@ -68,7 +66,7 @@ public class ElasticsearchIndexer
 				res = Streams.copyToString(reader);
 			}
 		} catch (IOException e) {
-			LOG.error(e.getMessage(), e);
+			Logger.error(e.getMessage(), e);
 		}
 		return res;
 	}
@@ -79,7 +77,7 @@ public class ElasticsearchIndexer
 			json.forEach((k, v) -> {
 				message.append("Item : " + k + " Count : " + v);
 			});
-			LOG.warn("id is empty for: " + message);
+			Logger.warn("id is empty for: " + message);
 			return;
 		}
 		bulkRequest
@@ -97,7 +95,7 @@ public class ElasticsearchIndexer
 		if (bulkResponse.hasFailures()) {
 			bulkResponse.forEach(item -> {
 				if (item.isFailed()) {
-					LOG.error("Indexing {} failed: {}", item.getId(),
+					Logger.error("Indexing {} failed: {}", item.getId(),
 							item.getFailureMessage());
 				}
 			});
@@ -135,7 +133,7 @@ public class ElasticsearchIndexer
 	public void process(final String obj) {
 		if (hostName == null || clusterName == null || indexName == null
 				|| indexType == null || idKey == null) {
-			ElasticsearchIndexer.LOG.error(
+			Logger.error(
 					"Set params: <host name> <cluster name> <index name> <index type> <id key>");
 			return;
 		}
