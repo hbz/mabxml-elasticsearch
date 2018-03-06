@@ -34,12 +34,15 @@ import play.Logger;
 @Out(StreamReceiver.class)
 public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 
-	private static String parseXml(final String line) {
+	private static String[] parseXml(final String line) {
 		try {
 			final DocumentBuilder builder = IdExtractor.factory.newDocumentBuilder();
 			final Document doc =
 					builder.parse(new InputSource(new StringReader(line)));
-			return IdExtractor.expression.evaluate(doc);
+			String[] ids = new String[2];
+			ids[0] = IdExtractor.expressionId.evaluate(doc);
+			ids[1] = IdExtractor.expressionSysId.evaluate(doc);
+			return ids;
 		} catch (XPathExpressionException | ParserConfigurationException
 				| SAXException | IOException e) {
 			Logger.warn("Could not parse: " + line);
@@ -48,11 +51,12 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 		return null;
 	}
 
-	private static XPathExpression expression;
+	private static XPathExpression expressionId;
+	private static XPathExpression expressionSysId;
 	private static DocumentBuilderFactory factory =
 			DocumentBuilderFactory.newInstance();
 	private static String idFieldName;
-
+	private static String idSysFieldName;
 	private static String fullXmlFieldName;
 
 	@Override
@@ -60,14 +64,20 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 		try (Scanner scanner = new Scanner(reader)) {
 			while (scanner.hasNextLine()) {
 				final String line = scanner.nextLine();
-				final String id = IdExtractor.parseXml(line);
-				if (id != null) {
-					getReceiver().startRecord(id);
-					getReceiver().literal(IdExtractor.idFieldName, id);
-					getReceiver().literal(IdExtractor.fullXmlFieldName, line);
-					getReceiver().endRecord();
-				} else {
-					Logger.warn("No ID found in " + line);
+				String ids[] = IdExtractor.parseXml(line);
+				if (ids != null) {
+					final String id = ids[0];
+					final String idSys = ids[1];
+					Logger.info("Id: " + id + ", Sys:" + idSys);
+					if (id != null && idSys != null) {
+						getReceiver().startRecord(id);
+						getReceiver().literal(IdExtractor.idFieldName, id);
+						getReceiver().literal(IdExtractor.idSysFieldName, idSys);
+						getReceiver().literal(IdExtractor.fullXmlFieldName, line);
+						getReceiver().endRecord();
+					} else {
+						Logger.warn("No ID found in " + line);
+					}
 				}
 			}
 		}
@@ -92,16 +102,43 @@ public class IdExtractor extends DefaultObjectPipe<Reader, StreamReceiver> {
 	}
 
 	/**
+	 * Sets the name of the alpeh internal sys number ID field which is emitted as
+	 * key.
+	 * 
+	 * @param idSysFieldName the name of the aleph internal SYS ID field which is
+	 *          emitted as key
+	 */
+	public void setIdSysFieldName(String idSysFieldName) {
+		IdExtractor.idSysFieldName = idSysFieldName;
+	}
+
+	/**
 	 * Sets the xPath to identify the ID in the record.
 	 *
 	 * @param xPath The xPath expression to select the record ID
 	 */
 	public void setXPathToId(final String xPath) {
 		try {
-			IdExtractor.expression =
+			IdExtractor.expressionId =
 					XPathFactory.newInstance().newXPath().compile(xPath);
 		} catch (final XPathExpressionException e) {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * Sets the xPath to identify the aleph internal sys ID in the record.
+	 *
+	 * @param xPath The xPath expression to select the record's aleph internal sys
+	 *          ID
+	 */
+	public void setXPathToSysId(String xPath) {
+		try {
+			IdExtractor.expressionSysId =
+					XPathFactory.newInstance().newXPath().compile(xPath);
+		} catch (final XPathExpressionException e) {
+			e.printStackTrace();
+		}
+	}
+
 }

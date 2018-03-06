@@ -18,8 +18,10 @@ import org.culturegraph.mf.stream.source.TarReader;
  */
 public final class Transform {
 
-	private static final String X_PATH =
+	private static final String X_PATH_001 =
 			"/OAI-PMH/ListRecords/record/metadata/record/datafield[@tag='001']/subfield[@code='a']";
+	private static final String X_PATH_SYS =
+			"/OAI-PMH/ListRecords/record/metadata/record/controlfield[@tag='SYS']";
 
 	private static final String DIR = "/files/open_data/open/DE-605/mabxml/";
 	private static final String SUFFIX = "gz";
@@ -53,8 +55,10 @@ public final class Transform {
 
 	private static IdExtractor getIdExtractor() {
 		IdExtractor idExtractor = new IdExtractor();
-		idExtractor.setXPathToId(X_PATH);
+		idExtractor.setXPathToId(X_PATH_001);
+		idExtractor.setXPathToSysId(X_PATH_SYS);
 		idExtractor.setIdFieldName("hbzId");
+		idExtractor.setIdSysFieldName("alephInternalSysnumber");
 		idExtractor.setFullXmlFieldName("mabXml");
 		return idExtractor;
 	}
