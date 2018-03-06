@@ -1,9 +1,18 @@
 {
+	"settings" : {
+			"index" : {
+			"number_of_shards" : 3
+			}
+	},
 	"mappings" : {
 		"mabxml" : {
 			"date_detection" : false,
 			"properties" : {
 				"hbzId" : {
+					"type" : "text",
+					"index" : "not_analyzed"
+				},
+				"alephInternalSysnumber" : {
 					"type" : "text",
 					"index" : "not_analyzed"
 				},

@@ -58,6 +58,12 @@ public class ElasticsearchIndexer
 				.execute().actionGet();
 	}
 
+	private void setIndexReplica(final Client client, final Object setting) {
+		client.admin().indices().prepareUpdateSettings(indexName)
+				.setSettings(ImmutableMap.of("index.number_of_replicas", setting))
+				.execute().actionGet();
+	}
+
 	private static String config() {
 		String res = null;
 		try {
@@ -108,6 +114,7 @@ public class ElasticsearchIndexer
 			executeBulk();
 		}
 		setIndexRefreshInterval(client, "1s");
+		setIndexReplica(client, "1");
 		client.close();
 	}
 
@@ -125,6 +132,7 @@ public class ElasticsearchIndexer
 			admin.prepareCreate(indexName).setSource(config()).execute().actionGet();
 		}
 		setIndexRefreshInterval(client, "-1");
+		setIndexReplica(client, "0");
 		bulkRequest = client.prepareBulk();
 		pendingIndexRequests = 0;
 	}
