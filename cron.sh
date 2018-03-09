@@ -9,7 +9,6 @@ IFS=$'\n\t'
 TARGET_PATH=/data/DE-605/mabxml
 # Determine the latest update file and store it locally:
 DATE=$(date "+%Y%m%d")
-DATE_YESTERDAY=$(date --date yesterday "+%Y%m%d")
 
 # Use "brace extension" as we don't know the appendix of the basedump
 if [ $1 == "basedump" ]; then
