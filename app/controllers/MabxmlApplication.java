@@ -28,13 +28,14 @@ public class MabxmlApplication extends Controller {
 	public static final Config CONFIG =
 			ConfigFactory.parseFile(new File("conf/application.conf")).resolve();
 	private static final String _SOURCE = "_source";
+	private static final String HITS = "hits";
 	private static final String MABXML_ELASTICSEARCH = "mabxml-elasticsearch";
 	private static final String ES_SERVER = CONFIG.getString("es.server");
 	private static final String PORT = ":9200";
 	private static final String ES_SERVER_URL = "http://" + ES_SERVER + PORT;
 	private static final String ES_INDEX = CONFIG.getString("es.index");
 	private static final String ES_TYPE = "mabxml";
-	private static final String GET_KEY = "mabXml";
+	private static final String GET_KEY_MABXML = "mabXml";
 
 	/**
 	 * @return 200 ok response to render the index page
@@ -48,16 +49,16 @@ public class MabxmlApplication extends Controller {
 	 * @return The source of a document as XML, if it was found
 	 */
 	public static Promise<Result> get(String id) {
-		String url = String.format("%s/%s/%s/%s/" + _SOURCE, ES_SERVER_URL,
-				ES_INDEX, ES_TYPE, id);
+		String url = String.format("%s/%s/%s/_search?q=%s", ES_SERVER_URL, ES_INDEX,
+				ES_TYPE, id);
 		play.Logger.info("Calling URL: " + url);
 		return WS.url(url).execute().map(toResult(id));
 	}
 
 	private static Function<WSResponse, Result> toResult(String id) {
 		return response -> response.getStatus() == Http.Status.OK
-				? ok(response.asJson().get(GET_KEY).asText())
-						.as("text/xml; charset: utf-8")
+				? ok(response.asJson().get(HITS).get(HITS).get(0).get(_SOURCE)
+						.get(GET_KEY_MABXML).asText()).as("text/xml; charset: utf-8")
 				: status(response.getStatus(), String.format("GET %s: %s\n%s", id,
 						response.getStatusText(), response.getBody()));
 	}
