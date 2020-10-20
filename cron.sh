@@ -18,7 +18,7 @@ else
 fi
 
 # Run the transformation with the latest file (and possibly unprocessed previous files):
-curl --fail -XPOST "http://localhost:7300/hbz01/transform?dir=$TARGET_PATH&suffix=gz&cluster=weywot&hostname=10.9.0.13&index=hbz01" >> logs/processMabxml.sh.$DATE-weywot.log 2>&1
+curl --fail -XPOST "http://localhost:7300/hbz01/transform?dir=$TARGET_PATH&suffix=gz&cluster=weywot&hostname=10.9.0.12&index=hbz01" >> logs/processMabxml.sh.$DATE-weywot.log 2>&1
 
 # Clean up
 rm $TARGET_PATH/*.gz
