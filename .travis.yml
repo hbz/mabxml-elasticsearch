@@ -1,20 +1,10 @@
-sudo: false
-language: java
-jdk: openjdk8
+language: scala
+scala: 2.12.2
+jdk: oraclejdk8
+dist: trusty
 env:
-  - ACTIVATOR_VERSION=1.3.9 ELASTICSEARCH_VERSION=5.6.3
-before_install:
-  - git clone https://github.com/hbz/metafacture-core.git
-  - cd metafacture-core
-  - ./gradlew install
-  - cd ..
-  - wget http://downloads.typesafe.com/typesafe-activator/${ACTIVATOR_VERSION}/typesafe-activator-${ACTIVATOR_VERSION}-minimal.zip
-  - unzip typesafe-activator-${ACTIVATOR_VERSION}-minimal.zip
-  - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.zip
-  - unzip elasticsearch-${ELASTICSEARCH_VERSION}.zip
-  - cd elasticsearch-${ELASTICSEARCH_VERSION}
-  - bin/elasticsearch -d
-  - cd ..
-  - sleep 10
-script:
-  - activator-${ACTIVATOR_VERSION}-minimal/bin/activator test
+  - ES_VERSION=5.6.3 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
+install:
+  - wget ${ES_DOWNLOAD_URL}
+  - tar -xzf elasticsearch-${ES_VERSION}.tar.gz
+  - ./elasticsearch-${ES_VERSION}/bin/elasticsearch &
