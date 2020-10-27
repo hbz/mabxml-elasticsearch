@@ -12,3 +12,6 @@ install:
   - cd metafacture-core
   - git checkout 4.0.0-HBZ-SNAPSHOT
   - mvn install
+
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION test
