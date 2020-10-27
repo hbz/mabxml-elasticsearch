@@ -4,6 +4,10 @@ jdk: oraclejdk8
 dist: trusty
 env:
   - ES_VERSION=5.6.3 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
+
+before_install:
+  - sudo update-ca-certificates -f
+
 install:
   - wget ${ES_DOWNLOAD_URL}
   - tar -xzf elasticsearch-${ES_VERSION}.tar.gz
