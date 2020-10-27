@@ -6,7 +6,7 @@ h1. Setup
 
 "!https://secure.travis-ci.org/hbz/mabxml-elasticsearch.png?branch=master!":https://travis-ci.org/hbz/mabxml-elasticsearch
 
-Prerequisites: Java 8; verify with @java -version@
+Prerequisites: Maven 3 with Java 8 and UTF-8 encoding; verify with @mvn -version@
 
 Create and change into a folder where you want to store the projects:
 
@@ -16,7 +16,7 @@ Build the hbz metafacture-core fork:
 
 * @git clone https://github.com/hbz/metafacture-core.git@
 * @cd metafacture-core@
-* @./gradlew clean install@
+* @mvn clean install -DskipTests@
 * @cd ..@
 
 Get and change into the mabxml-elasticsearch repo:

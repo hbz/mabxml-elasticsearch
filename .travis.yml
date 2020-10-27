@@ -10,4 +10,6 @@ install:
   - ./elasticsearch-${ES_VERSION}/bin/elasticsearch &
   - git clone https://github.com/hbz/metafacture-core.git
   - cd metafacture-core
-  - ./gradlew install
+  - git checkout 4.0.0-HBZ-SNAPSHOT
+  - mvn install
+  - cd ..
