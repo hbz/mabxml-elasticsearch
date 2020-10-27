@@ -1,5 +1,5 @@
 language: scala
-scala: 2.12.2
+scala: 2.11.1
 jdk: oraclejdk8
 dist: trusty
 env:
@@ -8,3 +8,7 @@ install:
   - wget ${ES_DOWNLOAD_URL}
   - tar -xzf elasticsearch-${ES_VERSION}.tar.gz
   - ./elasticsearch-${ES_VERSION}/bin/elasticsearch &
+  - git clone https://github.com/hbz/metafacture-core.git
+  - cd metafacture-core
+  - git checkout 4.0.0-HBZ-SNAPSHOT
+  - mvn install
