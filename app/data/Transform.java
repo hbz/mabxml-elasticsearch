@@ -3,11 +3,11 @@
 
 package data;
 
-import org.culturegraph.mf.stream.converter.JsonEncoder;
-import org.culturegraph.mf.stream.pipe.ObjectLogger;
-import org.culturegraph.mf.stream.source.DirReader;
-import org.culturegraph.mf.stream.source.FileOpener;
-import org.culturegraph.mf.stream.source.TarReader;
+import org.metafacture.json.JsonEncoder;
+import org.metafacture.monitoring.ObjectLogger;
+import org.metafacture.files.DirReader;
+import org.metafacture.io.FileOpener;
+import org.metafacture.io.TarReader;
 
 /**
  * Index MAB XML clobs into an Elasticsearch instance.

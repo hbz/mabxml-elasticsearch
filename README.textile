@@ -6,18 +6,11 @@ h1. Setup
 
 "!https://secure.travis-ci.org/hbz/mabxml-elasticsearch.png?branch=master!":https://travis-ci.org/hbz/mabxml-elasticsearch
 
-Prerequisites: Maven 3 with Java 8 and UTF-8 encoding; verify with @mvn -version@
+Prerequisites: Java 8; verify with @java -version@
 
-Create and change into a folder where you want to store the projects:
+Create and change into a folder where you want to store the project:
 
 * @mkdir ~/git ; cd ~/git@
-
-Build the hbz metafacture-core fork:
-
-* @git clone https://github.com/hbz/metafacture-core.git@
-* @cd metafacture-core@
-* @mvn clean install -DskipTests@
-* @cd ..@
 
 Get and change into the mabxml-elasticsearch repo:
 
@@ -30,13 +23,13 @@ h2. Index server setup
 
 See also: "Elasticsearch installation steps":https://www.elastic.co/downloads/elasticsearch.
 
-Download the latest 2.3.x Elasticsearch release, e.g. on Linux:
+Download the latest 5.6.x Elasticsearch release, e.g. on Linux:
 
-@wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.3.3.zip@
+@wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.16.zip@
 
 Unzip it and change into the new directory:
 
-@unzip elasticsearch-2.3.3.zip ; cd elasticsearch-2.3.3@
+@unzip elasticsearch-5.6.16.zip ; cd elasticsearch-5.6.16@
 
 Run the @elasticsearch@ application in the @bin/@ folder in daemon mode (output is logged to @logs/elasticsearch.log@), and record the process id:
 
