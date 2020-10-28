@@ -4,7 +4,7 @@ version := "1.1-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.10.7"
 
 resolvers += Resolver.sonatypeRepo("releases")
 
