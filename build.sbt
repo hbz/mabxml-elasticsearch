@@ -20,4 +20,7 @@ libraryDependencies ++= Seq(
   "io.netty" % "netty" % "3.9.3.Final" force()
 )
 
-resolvers += Resolver.mavenLocal
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("releases"),
+  Resolver.mavenLocal
+)
