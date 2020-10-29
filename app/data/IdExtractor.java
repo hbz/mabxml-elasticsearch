@@ -14,10 +14,10 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.culturegraph.mf.framework.DefaultObjectPipe;
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultObjectPipe;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

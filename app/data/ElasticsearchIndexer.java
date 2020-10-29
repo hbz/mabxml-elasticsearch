@@ -8,10 +8,10 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.culturegraph.mf.framework.DefaultObjectPipe;
-import org.culturegraph.mf.framework.ObjectReceiver;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultObjectPipe;
+import org.metafacture.framework.ObjectReceiver;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
