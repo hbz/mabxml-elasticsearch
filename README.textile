@@ -2,9 +2,9 @@ h1. About
 
 Index MAB-XML into "Elasticsearch":https://www.elastic.co/products/elasticsearch using "Metafacture":https://github.com/culturegraph/metafacture-documentation an serve it with "Playframework":https://www.playframework.com/.
 
-h1. Setup
+"!https://github.com/hbz/mabxml-elasticsearch/workflows/Scala%20CI/badge.svg?branch=master!":https://github.com/hbz/mabxml-elasticsearch/actions?query=workflow%3AScala%20CI
 
-"!https://secure.travis-ci.org/hbz/mabxml-elasticsearch.png?branch=master!":https://travis-ci.org/hbz/mabxml-elasticsearch
+h1. Setup
 
 Prerequisites: Java 8; verify with @java -version@
 
@@ -17,7 +17,7 @@ Get and change into the mabxml-elasticsearch repo:
 * @git clone https://github.com/hbz/mabxml-elasticsearch.git@
 * @cd mabxml-elasticsearch@
 
-See the @.travis.yml@ file for details on the CI config used by Travis.
+See the @.github/workflows/build.yml@ file for details on the CI config used by Github Actions.
 
 h2. Index server setup
 
