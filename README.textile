@@ -2,7 +2,7 @@ h1. About
 
 Index MAB-XML into "Elasticsearch":https://www.elastic.co/products/elasticsearch using "Metafacture":https://github.com/culturegraph/metafacture-documentation an serve it with "Playframework":https://www.playframework.com/.
 
-"!https://github.com/hbz/mabxml-elasticsearch/workflows/Scala%20CI/badge.svg?branch=master!":https://github.com/hbz/mabxml-elasticsearch/actions?query=workflow%3AScala%20CI
+"!https://github.com/hbz/mabxml-elasticsearch/workflows/Build/badge.svg?branch=master!":https://github.com/hbz/mabxml-elasticsearch/actions?query=workflow%3ABuild
 
 h1. Setup
 
