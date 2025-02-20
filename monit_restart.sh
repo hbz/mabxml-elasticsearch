@@ -31,7 +31,7 @@ cd $HOME/git/$REPO
 case $ACTION in
 	start)
 		kill $(cat target/universal/stage/RUNNING_PID)
-		JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError" $HOME/activator-dist-1.3.5/activator "start $PORT"
+		JAVA_OPTS="$JAVA_OPTS -XX:+ExitOnOutOfMemoryError" $HOME/activator-dist-1.3.5/activator "start $PORT"
 		;;
 	stop)
 		kill $(cat target/universal/stage/RUNNING_PID)
